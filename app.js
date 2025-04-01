@@ -21,6 +21,7 @@ const empBeatMapRoutes = require("./routes/empBeatMapRoutes");
 const dustBinRoutes = require("./routes/dustBinRoutes");
 const areaRoutes = require("./routes/areaRoutes");
 const dumpYardRoutes = require("./routes/dumpYardRoutes");
+const ipLogRoutes = require("./routes/ipLog.routes");
 
 // Import MongoDB routes
 const garbageCollectionRoutes = require("./routes/GarbageCollection.route");
@@ -36,6 +37,7 @@ app.use("/api/empBeatMap", empBeatMapRoutes);
 app.use("/api/dustBins", dustBinRoutes);
 app.use("/api/areas", areaRoutes);
 app.use("/api/dumpYards", dumpYardRoutes);
+app.use("/api/iplogs", ipLogRoutes);
 
 // MongoDB API Endpoints
 app.use("/api/garbageCollections", garbageCollectionRoutes);
