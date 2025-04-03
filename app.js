@@ -26,6 +26,7 @@ const ipLogRoutes = require("./routes/ipLog.routes");
 // Import MongoDB routes
 const garbageCollectionRoutes = require("./routes/GarbageCollection.route");
 const dailyAttendanceLogRoutes = require("./routes/dailyAttendanceLog.routes");
+const houseRoutes = require("./routes/houseRegistration.routes");
 
 // SQL API Endpoints
 app.use("/api/employees", employeeRoutes);
@@ -41,6 +42,7 @@ app.use("/api/iplogs", ipLogRoutes);
 // MongoDB API Endpoints
 app.use("/api/garbageCollections", garbageCollectionRoutes);
 app.use("/api/attendanceLogs", dailyAttendanceLogRoutes);
+app.use("/api/houses", houseRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend API is running");
