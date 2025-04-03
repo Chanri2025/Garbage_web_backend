@@ -23,7 +23,6 @@ const dustBinRoutes = require("./routes/dustBinRoutes");
 const areaRoutes = require("./routes/areaRoutes");
 const dumpYardRoutes = require("./routes/dumpYardRoutes");
 const ipLogRoutes = require("./routes/ipLog.routes");
-
 // Import MongoDB routes
 const garbageCollectionRoutes = require("./routes/GarbageCollection.route");
 const dailyAttendanceLogRoutes = require("./routes/dailyAttendanceLog.routes");
@@ -32,7 +31,6 @@ const dailyAttendanceLogRoutes = require("./routes/dailyAttendanceLog.routes");
 app.use("/api/employees", employeeRoutes);
 app.use("/api/devices", deviceRoutes);
 app.use("/api/vehicles", vehicleRoutes);
-app.use("/api/zones", zoneRoutes);
 app.use("/api/wards", wardRoutes);
 app.use("/api/empBeatMap", empBeatMapRoutes);
 app.use("/api/dustBins", dustBinRoutes);
