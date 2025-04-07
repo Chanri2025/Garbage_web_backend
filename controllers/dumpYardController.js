@@ -14,37 +14,44 @@ exports.getAllDumpYards = (req, res) => {
 // CREATE: Add a new dump yard and generate a QR code
 exports.createDumpYard = async (req, res) => {
   try {
-    // Insert dump yard data into the database (without QR code URL yet)
     const data = req.body;
-    const [result] = await db
-      .promise()
-      .query("INSERT INTO Dump_Yard_Details SET ?", data);
-    const dumpYardId = result.insertId;
 
-    // For QR code generation, use the dump yard's ID and name (if provided)
-    const dumpYardName = req.body.DY_Name || "DumpYard";
+    const dumpYardId = data.DY_ID; // User-defined ID
+
+    // Optional: Check if this DY_ID already exists to prevent duplicates
+    const [existing] = await db
+      .promise()
+      .query("SELECT * FROM Dump_Yard_Details WHERE DY_ID = ?", [dumpYardId]);
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "Dump Yard ID already exists" });
+    }
+
+    // Insert the dump yard record with user-defined DY_ID
+    await db.promise().query("INSERT INTO Dump_Yard_Details SET ?", data);
+
+    // Generate QR data using the provided DY_ID and DY_Name
+    const dumpYardName = data.DY_Name || "DumpYard";
     const qrData = `DY_ID=${dumpYardId}&name=${dumpYardName}`;
 
-    // Define file path details for the QR code image.
+    // Path setup for QR code file
     const qrFilename = `dump_yard_qr_${dumpYardId}.png`;
     const qrDir = path.join(__dirname, "../uploads/qrcodes");
     const qrFilePath = path.join(qrDir, qrFilename);
 
-    // Ensure the QR code directory exists.
     if (!fs.existsSync(qrDir)) {
       fs.mkdirSync(qrDir, { recursive: true });
     }
 
-    // Generate the QR code and save it as a PNG image.
+    // Generate QR code image
     await QRCode.toFile(qrFilePath, qrData, {
       type: "png",
       errorCorrectionLevel: "H",
     });
 
-    // Construct a URL for the QR code image.
     const qrUrl = `/uploads/qrcodes/${qrFilename}`;
 
-    // Update the dump yard record with the generated QR code URL.
+    // Update the record with the QR code URL
     await db
       .promise()
       .query("UPDATE Dump_Yard_Details SET DY_QR_Url = ? WHERE DY_ID = ?", [
@@ -52,12 +59,13 @@ exports.createDumpYard = async (req, res) => {
         dumpYardId,
       ]);
 
-    // Respond with the dump yard ID and QR code URL.
-    res
-      .status(201)
-      .json({ message: "Dump yard created", id: dumpYardId, qrUrl });
+    res.status(201).json({
+      message: "Dump yard created",
+      id: dumpYardId,
+      qrUrl,
+    });
   } catch (err) {
-    console.error(err);
+    console.error("Error creating dump yard:", err);
     res.status(500).json({ error: err.message });
   }
 };
