@@ -14,4 +14,4 @@ const GarbageCollectionSchema = new mongoose.Schema({
   TimeStamp: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("GarbageCollection", GarbageCollectionSchema);
+module.exports = mongoose.model("garbagecollections", GarbageCollectionSchema);

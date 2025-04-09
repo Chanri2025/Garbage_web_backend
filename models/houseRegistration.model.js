@@ -15,4 +15,4 @@ const HouseRegistrationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("HouseRegistration", HouseRegistrationSchema);
+module.exports = mongoose.model("houseregistrations", HouseRegistrationSchema);

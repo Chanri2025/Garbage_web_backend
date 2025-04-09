@@ -7,4 +7,7 @@ const DailyAttendanceLogSchema = new mongoose.Schema({
   Entry_Type: { type: String, maxlength: 50 },
 });
 
-module.exports = mongoose.model("DailyAttendanceLog", DailyAttendanceLogSchema);
+module.exports = mongoose.model(
+  "dailyattendancelogs",
+  DailyAttendanceLogSchema
+);

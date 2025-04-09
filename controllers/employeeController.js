@@ -4,10 +4,15 @@ const path = require("path");
 
 // READ: Get all employees
 exports.getAllEmployees = (req, res) => {
-  db.query("SELECT * FROM Employee_Table", (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
-  });
+  db.promise()
+    .query("SELECT * FROM Employee_Table")
+    .then(([results]) => {
+      res.json(results);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.message });
+    });
 };
 
 // CREATE: Add a new employee with profile pic upload and QR code generation (not shown here)
@@ -15,13 +20,11 @@ exports.createEmployee = async (req, res) => {
   try {
     // [Create logic here...]
     // This function is assumed to handle file upload and QR code generation.
-    res
-      .status(201)
-      .json({
-        message: "Employee created",
-        id: 1,
-        qrUrl: "/uploads/qrcodes/qr_1.png",
-      });
+    res.status(201).json({
+      message: "Employee created",
+      id: 1,
+      qrUrl: "/uploads/qrcodes/qr_1.png",
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

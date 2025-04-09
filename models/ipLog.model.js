@@ -7,4 +7,4 @@ const IpLogSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("IpLog", IpLogSchema);
+module.exports = mongoose.model("iplogs", IpLogSchema);
