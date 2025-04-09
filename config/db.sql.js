@@ -1,6 +1,7 @@
 const mysql = require("mysql2");
 
-const connection = mysql.createConnection({
+// Use createPool instead of createConnection
+const pool = mysql.createPool({
   host: process.env.SQL_HOST,
   user: process.env.SQL_USER,
   password: process.env.SQL_PASSWORD,
@@ -10,12 +11,13 @@ const connection = mysql.createConnection({
   queueLimit: 0,
 });
 
-connection.connect((err) => {
+pool.getConnection((err, connection) => {
   if (err) {
-    console.error("SQL DB connection error:", err);
-    return;
+    console.error("SQL DB pool connection error:", err);
+  } else {
+    console.log("SQL DB connected via pool");
+    connection.release(); // Release the test connection
   }
-  console.log("SQL DB connected");
 });
 
-module.exports = connection;
+module.exports = pool;
