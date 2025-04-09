@@ -45,7 +45,7 @@ app.use("/api/attendanceLogs", dailyAttendanceLogRoutes);
 app.use("/api/houses", houseRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Backend API is running");
+  res.send("SWM API is running");
 });
 
 const PORT = process.env.PORT || 5000;
