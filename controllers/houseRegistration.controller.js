@@ -1,3 +1,12 @@
+const cloudinary = require("cloudinary").v2;
+require("dotenv").config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const HouseRegistration = require("../models/houseRegistration.model");
 const QRCode = require("qrcode");
 const path = require("path");
@@ -30,26 +39,25 @@ exports.createHouse = async (req, res) => {
     const qrDir = path.join(__dirname, "../uploads/qrcode"); // <-- same folder as multer
     const qrFilePath = path.join(qrDir, qrFilename);
 
-    // Ensure the QR code directory exists
-    if (!fs.existsSync(qrDir)) {
-      fs.mkdirSync(qrDir, { recursive: true });
-    }
-
-    // 4. Generate the QR code and save it as a PNG image
-    await QRCode.toFile(qrFilePath, qrData, {
+    // 4. Generate QR code and upload to Cloudinary
+    const qrBuffer = await QRCode.toBuffer(qrData, {
       type: "png",
       errorCorrectionLevel: "H",
     });
 
-    // 5. Construct a URL/path for the QR code image
-    const qrUrl = `/uploads/qrcode/${qrFilename}`;
+    const uploadResponse = await cloudinary.uploader.upload_stream(
+      { folder: "qrcode/house" },
+      async (error, result) => {
+        if (error) throw new Error("Cloudinary upload failed");
+        // 5. Save the Cloudinary URL
+        house.houseQRCode = result.secure_url;
+        house = await house.save();
+        res.status(201).json({ message: "House registered", data: house });
+      }
+    );
 
-    // 6. Update the house record with the generated QR code URL
-    house.houseQRCode = qrUrl;
-    house = await house.save();
-
-    // 7. Respond with success
-    res.status(201).json({ message: "House registered", data: house });
+    uploadResponse.end(qrBuffer);
+    return; // Prevent further execution since response is sent in callback
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -109,7 +117,17 @@ exports.getHouseFromQRCode = async (req, res) => {
         return res.status(404).json({ message: "House not found in database" });
       }
 
-      // 7. Delete the uploaded image (optional cleanup)
+      // 7. Delete the uploaded image (optional cleanup) and upload scanned QR code to Cloudinary
+      const scannedBuffer = await fs.promises.readFile(imagePath);
+      const uploadResponse = await cloudinary.uploader.upload_stream(
+        { folder: "qrcode/scanned" },
+        (error, result) => {
+          if (error)
+            console.error("Cloudinary upload failed for scanned QR code");
+          else console.log("Scanned QR code uploaded to:", result.secure_url);
+        }
+      );
+      uploadResponse.end(scannedBuffer);
       fs.unlink(imagePath, () => {});
 
       return res.status(200).json({ message: "House found", data: house });
@@ -152,35 +170,28 @@ exports.updateHouse = async (req, res) => {
       fs.mkdirSync(qrDir, { recursive: true });
     }
 
-    // 5. Generate new QR code
-    await QRCode.toFile(newQrFilePath, qrData, {
+    // 5. Generate new QR code and upload to Cloudinary
+    const qrBuffer = await QRCode.toBuffer(qrData, {
       type: "png",
       errorCorrectionLevel: "H",
     });
 
-    // 6. Construct new QR code URL
-    const newQrUrl = `/uploads/qrcode/${qrFilename}`;
-
-    // 7. Delete the old QR image
-    if (oldQrUrl) {
-      const oldQrPath = path.join(__dirname, "../", oldQrUrl);
-      if (fs.existsSync(oldQrPath)) {
-        fs.unlink(oldQrPath, (err) => {
-          if (err) console.error("Error deleting old QR code:", err);
-          else console.log("Old QR code deleted:", oldQrPath);
-        });
+    const uploadResponse = await cloudinary.uploader.upload_stream(
+      { folder: "qrcode/house" },
+      async (error, result) => {
+        if (error) throw new Error("Cloudinary upload failed");
+        newData.houseQRCode = result.secure_url;
+        const updatedHouse = await HouseRegistration.findByIdAndUpdate(
+          houseId,
+          newData,
+          { new: true }
+        );
+        res.json({ message: "House updated", data: updatedHouse });
       }
-    }
-
-    // 8. Update the house record with new data + new QR code URL
-    newData.houseQRCode = newQrUrl;
-    const updatedHouse = await HouseRegistration.findByIdAndUpdate(
-      houseId,
-      newData,
-      { new: true }
     );
 
-    res.json({ message: "House updated", data: updatedHouse });
+    uploadResponse.end(qrBuffer);
+    return;
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -196,15 +207,7 @@ exports.deleteHouse = async (req, res) => {
     }
 
     // 2. Delete the associated QR code image
-    if (house.houseQRCode) {
-      const qrPath = path.join(__dirname, "../", house.houseQRCode);
-      if (fs.existsSync(qrPath)) {
-        fs.unlink(qrPath, (err) => {
-          if (err) console.error("Error deleting QR code image:", err);
-          else console.log("QR code image deleted:", qrPath);
-        });
-      }
-    }
+    // Removed file deletion logic since files are stored in Cloudinary
 
     res.json({ message: "House deleted" });
   } catch (err) {
