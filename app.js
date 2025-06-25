@@ -38,6 +38,7 @@ app.use("/api/dustBins", dustBinRoutes);
 app.use("/api/areas", areaRoutes);
 app.use("/api/dumpYards", dumpYardRoutes);
 app.use("/api/iplogs", ipLogRoutes);
+app.use("/api/zones", zoneRoutes);
 
 // MongoDB API Endpoints
 app.use("/api/garbageCollections", garbageCollectionRoutes);
