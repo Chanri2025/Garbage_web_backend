@@ -11,31 +11,148 @@ exports.getAllVehicles = (req, res) => {
   });
 };
 
+
 // Create new vehicle
-exports.createVehicle = (req, res) => {
-  const data = req.body;
-  db.query("INSERT INTO Vehicle_Details SET ?", data, (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ message: "Vehicle created", id: result.insertId });
+// Create new vehicle with employee assignment logic
+exports.createVehicle = async (req, res) => {
+  const connection = await db.promise().getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const data = req.body;
+    const { Vehicle_ID, Assigned_Emp_ID } = data;
+
+    // 1. Insert new vehicle
+    await connection.query("INSERT INTO vehicle_details SET ?", data);
+
+    // 2. If employee is assigned, update employee_table
+    if (Assigned_Emp_ID) {
+      // Check if employee exists
+      const [employee] = await connection.query(
+        "SELECT * FROM employee_table WHERE Emp_ID = ?",
+        [Assigned_Emp_ID]
+      );
+      if (!employee.length) {
+        throw new Error("Assigned Employee ID not found.");
+      }
+
+      // If employee already has a vehicle assigned, unassign it first
+      await connection.query(
+        `UPDATE vehicle_details 
+         SET Assigned_Emp_ID = NULL 
+         WHERE Assigned_Emp_ID = ?`,
+        [Assigned_Emp_ID]
+      );
+
+      // Assign vehicle to employee
+      await connection.query(
+        `UPDATE employee_table 
+         SET Assigned_Vehicle_ID = ? 
+         WHERE Emp_ID = ?`,
+        [Vehicle_ID, Assigned_Emp_ID]
+      );
+
+      // Re-set Assigned_EMP_ID in the newly created vehicle row
+      await connection.query(
+        `UPDATE vehicle_details 
+         SET Assigned_Emp_ID = ? 
+         WHERE Vehicle_ID = ?`,
+        [Assigned_Emp_ID, Vehicle_ID]
+      );
+    }
+
+    await connection.commit();
+    res.status(201).json({ message: "Vehicle created and employee updated." });
+
+  } catch (err) {
+    await connection.rollback();
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    connection.release();
+  }
+};
+
+
+
+// Update existing vehicle by ID
+// Express route: PUT /api/vehicles/:id
+exports.updateVehicle = (req, res) => {
+  const vehicleId = req.params.id;
+  const {
+    Vehicle_No,
+    Vehicle_Type,
+    Assigned_Emp_ID,
+    isActive,
+    Description,
+    Joined_Date,
+    lastUpdate_Date,
+    Device_id,
+    Area_ID
+  } = req.body;
+
+  const updateVehicleQuery = `
+    UPDATE Vehicle_Details SET
+      Vehicle_No = ?,
+      Vehicle_Type = ?,
+      Assigned_Emp_ID = ?,
+      isActive = ?,
+      Description = ?,
+      Joined_Date = ?,
+      lastUpdate_Date = ?,
+      Device_id = ?,
+      Area_ID = ?
+    WHERE Vehicle_ID = ?
+  `;
+
+  const vehicleValues = [
+    Vehicle_No,
+    Vehicle_Type,
+    Assigned_Emp_ID || null,
+    isActive,
+    Description,
+    Joined_Date,
+    lastUpdate_Date,
+    Device_id || null,
+    Area_ID || null,
+    vehicleId
+  ];
+
+  // Begin update flow
+  db.query(updateVehicleQuery, vehicleValues, (err, result) => {
+    if (err) {
+      console.error("Vehicle update error:", err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Vehicle not found" });
+    }
+
+    // Step 2: Update employee’s Assigned_Vehicle_ID
+    if (Assigned_Emp_ID) {
+      const updateEmployeeQuery = `
+        UPDATE employee_table SET Assigned_Vehicle_ID = ?
+        WHERE Emp_ID = ?
+      `;
+
+      db.query(updateEmployeeQuery, [vehicleId, Assigned_Emp_ID], (empErr, empResult) => {
+        if (empErr) {
+          console.error("Employee update error:", empErr);
+          return res.status(500).json({ error: empErr.message });
+        }
+
+        res.json({ message: "Vehicle and employee updated successfully" });
+      });
+
+    } else {
+      res.json({ message: "Vehicle updated successfully (no employee assigned)" });
+    }
   });
 };
 
-// Update existing vehicle by ID
-exports.updateVehicle = (req, res) => {
-  const id = req.params.id;
-  const data = req.body;
-  db.query(
-    "UPDATE Vehicle_Details SET ? WHERE Vehicle_ID = ?",
-    [data, id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Vehicle not found" });
-      }
-      res.json({ message: "Vehicle updated" });
-    }
-  );
-};
+
 
 // Delete vehicle by ID
 exports.deleteVehicle = (req, res) => {
