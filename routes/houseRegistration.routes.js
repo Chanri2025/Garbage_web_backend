@@ -7,7 +7,7 @@ const houseController = require("../controllers/houseRegistration.controller");
 // Configure multer to upload files to `uploads/qrcode`
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/qrcode"); // <-- store in this folder
+    cb(null, "uploads/qrcode");
   },
   filename: (req, file, cb) => {
     cb(null, "upload_" + Date.now() + path.extname(file.originalname));
@@ -16,26 +16,26 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Retrieve all house registrations.
+// GET all houses (MongoDB)
 router.get("/", houseController.getAllHouses);
 
-// Create a new house registration (with QR code generation).
+// CREATE a new house (MongoDB)
 router.post("/", houseController.createHouse);
 
-// Retrieve a single house registration by its ID.
+// GET a house by MongoDB _id
 router.get("/:id", houseController.getHouseById);
 
-// Scan/upload a QR code image → decode → return matching house info
+// SCAN a QR code image and return matching house info
 router.post(
   "/scan-qr",
   upload.single("qrImage"),
   houseController.getHouseFromQRCode
 );
 
-// Update an existing house registration (regenerate QR code).
+// UPDATE a house by MongoDB _id
 router.put("/:id", houseController.updateHouse);
 
-// Delete a house registration (and its QR code image).
+// DELETE a house by MongoDB _id
 router.delete("/:id", houseController.deleteHouse);
 
 module.exports = router;

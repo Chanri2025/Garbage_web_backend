@@ -27,6 +27,19 @@ exports.createDumpYard = async (req, res) => {
       return res.status(400).json({ error: "Dump Yard ID already exists" });
     }
 
+    // --- Referential integrity check for Ward_ID ---
+    // Make sure the provided Ward_ID exists in Ward_Details and fetch Zone_ID
+    const [wardRows] = await db.promise().query(
+      "SELECT Zone_ID FROM Ward_Details WHERE Ward_ID = ?",
+      [data.Ward_ID]
+    );
+    if (wardRows.length === 0) {
+      return res.status(400).json({ error: "Invalid Ward_ID: not found in Ward_Details" });
+    }
+    // Always set Zone_ID based on Ward_Details
+    data.Zone_ID = wardRows[0].Zone_ID;
+    // --- End check ---
+
     // Insert the dump yard record with user-defined DY_ID
     await db.promise().query("INSERT INTO Dump_Yard_Details SET ?", data);
 
@@ -90,6 +103,20 @@ exports.updateDumpYard = async (req, res) => {
     const currentName = currentRows[0].DY_Name;
     // Use new name if provided; otherwise, fallback to current name.
     const newName = newData.DY_Name ? newData.DY_Name : currentName;
+
+    // --- Referential integrity check for Ward_ID on update ---
+    if (newData.Ward_ID) {
+      const [wardRows] = await db.promise().query(
+        "SELECT Zone_ID FROM Ward_Details WHERE Ward_ID = ?",
+        [newData.Ward_ID]
+      );
+      if (wardRows.length === 0) {
+        return res.status(400).json({ error: "Invalid Ward_ID: not found in Ward_Details" });
+      }
+      // Always set Zone_ID based on Ward_Details
+      newData.Zone_ID = wardRows[0].Zone_ID;
+    }
+    // --- End check ---
 
     // First, update the dump yard record with the new data (excluding QR code).
     await db
