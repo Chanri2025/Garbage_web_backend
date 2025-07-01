@@ -13,10 +13,11 @@ const GarbageCollectionSchema = new mongoose.Schema({
   Coordinates: String,
   Created_Date: String,
   Updated_Date: String,
+  EMP_ID: String // ✅ Added this line
 });
 
 module.exports = mongoose.model(
   "garbage_collection_housewise",
   GarbageCollectionSchema,
-  "garbage_collection_housewise" // Explicit collection name
+  "garbage_collection_housewise"
 );
