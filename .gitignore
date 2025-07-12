@@ -3,3 +3,7 @@
 /.idea
 uploads
 jsonGen.js
+dailyAttendanceLoggen.js
+house_details.json
+migrate.js
+migrateAttendanceLogs.js
