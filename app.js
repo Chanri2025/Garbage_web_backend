@@ -27,6 +27,7 @@ const ipLogRoutes = require("./routes/ipLog.routes");
 const garbageCollectionRoutes = require("./routes/GarbageCollection.route");
 const dailyAttendanceLogRoutes = require("./routes/dailyAttendanceLog.routes");
 const houseRoutes = require("./routes/houseRegistration.routes");
+const carbonFootprintDetailsRoutes = require("./routes/carbonFootprintDetails.routes");
 
 // SQL API Endpoints
 app.use("/api/employees", employeeRoutes);
@@ -38,11 +39,13 @@ app.use("/api/dustBins", dustBinRoutes);
 app.use("/api/areas", areaRoutes);
 app.use("/api/dumpYards", dumpYardRoutes);
 app.use("/api/iplogs", ipLogRoutes);
+app.use("/api/zones", zoneRoutes);
 
 // MongoDB API Endpoints
 app.use("/api/garbageCollections", garbageCollectionRoutes);
 app.use("/api/attendanceLogs", dailyAttendanceLogRoutes);
 app.use("/api/houses", houseRoutes);
+app.use("/api/carbonFootprintDetails", carbonFootprintDetailsRoutes);
 
 app.get("/", (req, res) => {
   res.send("SWM API is running");

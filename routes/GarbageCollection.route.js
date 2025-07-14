@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const garbageController = require("../controllers/garbageCollection.controller");
+const controller = require("../controllers/garbageCollection.controller");
 
-router.get("/", garbageController.getAllCollections);
-router.post("/", garbageController.createCollection);
-router.put("/:id", garbageController.updateCollection);
-router.delete("/:id", garbageController.deleteCollection);
+router.get("/", controller.getAllGarbageCollections);
+router.post("/", controller.createGarbageCollection);
+router.get("/:id", controller.getGarbageCollectionById);
+router.put("/:id", controller.updateGarbageCollection);
+router.delete("/:id", controller.deleteGarbageCollection);
 
 module.exports = router;

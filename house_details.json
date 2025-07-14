@@ -1,0 +1,1002 @@
+[
+  {
+    "House_ID": 1,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.95,
+    "Address": "House No 1, Lane 1, Zone 18",
+    "Coordinates": "19.589411,76.870187",
+    "Created_Date": "2025-04-13",
+    "Updated_Date": "2025-05-12",
+    "Area_ID": 18
+  },
+  {
+    "House_ID": 2,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 7.08,
+    "Address": "House No 2, Lane 13, Zone 19",
+    "Coordinates": "19.884469,76.985899",
+    "Created_Date": "2025-04-15",
+    "Updated_Date": "2025-05-10",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 3,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 15.91,
+    "Address": "House No 3, Lane 17, Zone 18",
+    "Coordinates": "18.881859,76.546803",
+    "Created_Date": "2025-04-19",
+    "Updated_Date": "2025-05-12",
+    "Area_ID": 18
+  },
+  {
+    "House_ID": 4,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.31,
+    "Address": "House No 4, Lane 13, Zone 10",
+    "Coordinates": "16.869101,76.190865",
+    "Created_Date": "2025-04-15",
+    "Updated_Date": "2025-05-22",
+    "Area_ID": 10
+  },
+  {
+    "House_ID": 5,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 13.01,
+    "Address": "House No 5, Lane 14, Zone 3",
+    "Coordinates": "20.062266,74.940248",
+    "Created_Date": "2025-04-06",
+    "Updated_Date": "2025-05-31",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 6,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.69,
+    "Address": "House No 6, Lane 2, Zone 11",
+    "Coordinates": "16.732424,74.626967",
+    "Created_Date": "2025-04-28",
+    "Updated_Date": "2025-05-12",
+    "Area_ID": 11
+  },
+  {
+    "House_ID": 7,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 17.96,
+    "Address": "House No 7, Lane 8, Zone 1",
+    "Coordinates": "18.344427,78.012383",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-18",
+    "Area_ID": 1
+  },
+  {
+    "House_ID": 8,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.64,
+    "Address": "House No 8, Lane 11, Zone 10",
+    "Coordinates": "17.131862,78.855591",
+    "Created_Date": "2025-04-19",
+    "Updated_Date": "2025-05-20",
+    "Area_ID": 10
+  },
+  {
+    "House_ID": 9,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 4.51,
+    "Address": "House No 9, Lane 5, Zone 11",
+    "Coordinates": "20.39992,78.634956",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-02",
+    "Area_ID": 11
+  },
+  {
+    "House_ID": 10,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 16.3,
+    "Address": "House No 10, Lane 10, Zone 5",
+    "Coordinates": "19.597686,75.127103",
+    "Created_Date": "2025-04-16",
+    "Updated_Date": "2025-05-04",
+    "Area_ID": 5
+  },
+  {
+    "House_ID": 11,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.77,
+    "Address": "House No 11, Lane 19, Zone 1",
+    "Coordinates": "17.355486,78.150405",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-05",
+    "Area_ID": 1
+  },
+  {
+    "House_ID": 12,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.8,
+    "Address": "House No 12, Lane 7, Zone 7",
+    "Coordinates": "19.577352,72.804436",
+    "Created_Date": "2025-04-30",
+    "Updated_Date": "2025-05-09",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 13,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 13.34,
+    "Address": "House No 13, Lane 14, Zone 14",
+    "Coordinates": "18.782369,78.834013",
+    "Created_Date": "2025-04-09",
+    "Updated_Date": "2025-05-07",
+    "Area_ID": 14
+  },
+  {
+    "House_ID": 14,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 9.95,
+    "Address": "House No 14, Lane 19, Zone 16",
+    "Coordinates": "18.035808,78.923384",
+    "Created_Date": "2025-04-18",
+    "Updated_Date": "2025-05-08",
+    "Area_ID": 16
+  },
+  {
+    "House_ID": 15,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 13.81,
+    "Address": "House No 15, Lane 4, Zone 2",
+    "Coordinates": "21.099637,74.349611",
+    "Created_Date": "2025-04-16",
+    "Updated_Date": "2025-05-03",
+    "Area_ID": 2
+  },
+  {
+    "House_ID": 16,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 7.9,
+    "Address": "House No 16, Lane 13, Zone 13",
+    "Coordinates": "19.59739,76.808017",
+    "Created_Date": "2025-04-01",
+    "Updated_Date": "2025-05-31",
+    "Area_ID": 13
+  },
+  {
+    "House_ID": 17,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.82,
+    "Address": "House No 17, Lane 7, Zone 11",
+    "Coordinates": "19.863785,77.492026",
+    "Created_Date": "2025-04-08",
+    "Updated_Date": "2025-05-12",
+    "Area_ID": 11
+  },
+  {
+    "House_ID": 18,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 12.44,
+    "Address": "House No 18, Lane 7, Zone 9",
+    "Coordinates": "18.903899,75.043359",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-04",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 19,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.74,
+    "Address": "House No 19, Lane 8, Zone 5",
+    "Coordinates": "17.548218,77.631027",
+    "Created_Date": "2025-04-13",
+    "Updated_Date": "2025-05-03",
+    "Area_ID": 5
+  },
+  {
+    "House_ID": 20,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 10.11,
+    "Address": "House No 20, Lane 11, Zone 1",
+    "Coordinates": "18.862703,75.969847",
+    "Created_Date": "2025-04-13",
+    "Updated_Date": "2025-05-31",
+    "Area_ID": 1
+  },
+  {
+    "House_ID": 21,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 10.98,
+    "Address": "House No 21, Lane 19, Zone 4",
+    "Coordinates": "18.172396,77.557599",
+    "Created_Date": "2025-04-20",
+    "Updated_Date": "2025-05-20",
+    "Area_ID": 4
+  },
+  {
+    "House_ID": 22,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 19.88,
+    "Address": "House No 22, Lane 6, Zone 11",
+    "Coordinates": "20.811886,73.519136",
+    "Created_Date": "2025-04-22",
+    "Updated_Date": "2025-05-30",
+    "Area_ID": 11
+  },
+  {
+    "House_ID": 23,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 13.27,
+    "Address": "House No 23, Lane 3, Zone 19",
+    "Coordinates": "19.313832,77.596536",
+    "Created_Date": "2025-04-19",
+    "Updated_Date": "2025-05-18",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 24,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 17.21,
+    "Address": "House No 24, Lane 6, Zone 13",
+    "Coordinates": "20.545109,74.118081",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-14",
+    "Area_ID": 13
+  },
+  {
+    "House_ID": 25,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 0.54,
+    "Address": "House No 25, Lane 8, Zone 14",
+    "Coordinates": "19.776904,75.593085",
+    "Created_Date": "2025-04-24",
+    "Updated_Date": "2025-05-06",
+    "Area_ID": 14
+  },
+  {
+    "House_ID": 26,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.75,
+    "Address": "House No 26, Lane 18, Zone 20",
+    "Coordinates": "16.766357,72.670246",
+    "Created_Date": "2025-04-27",
+    "Updated_Date": "2025-05-13",
+    "Area_ID": 20
+  },
+  {
+    "House_ID": 27,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.92,
+    "Address": "House No 27, Lane 19, Zone 12",
+    "Coordinates": "16.647725,78.851708",
+    "Created_Date": "2025-04-06",
+    "Updated_Date": "2025-05-13",
+    "Area_ID": 12
+  },
+  {
+    "House_ID": 28,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 7.67,
+    "Address": "House No 28, Lane 15, Zone 7",
+    "Coordinates": "19.447699,74.25947",
+    "Created_Date": "2025-04-09",
+    "Updated_Date": "2025-05-07",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 29,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 16.15,
+    "Address": "House No 29, Lane 1, Zone 7",
+    "Coordinates": "17.42154,74.954879",
+    "Created_Date": "2025-04-15",
+    "Updated_Date": "2025-05-19",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 30,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.96,
+    "Address": "House No 30, Lane 2, Zone 3",
+    "Coordinates": "18.223465,74.99523",
+    "Created_Date": "2025-04-03",
+    "Updated_Date": "2025-05-31",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 31,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 12.88,
+    "Address": "House No 31, Lane 17, Zone 14",
+    "Coordinates": "16.658739,77.261707",
+    "Created_Date": "2025-04-24",
+    "Updated_Date": "2025-05-25",
+    "Area_ID": 14
+  },
+  {
+    "House_ID": 32,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 7.36,
+    "Address": "House No 32, Lane 11, Zone 18",
+    "Coordinates": "16.831495,76.403613",
+    "Created_Date": "2025-04-06",
+    "Updated_Date": "2025-05-15",
+    "Area_ID": 18
+  },
+  {
+    "House_ID": 33,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 11.55,
+    "Address": "House No 33, Lane 9, Zone 7",
+    "Coordinates": "19.251134,74.592739",
+    "Created_Date": "2025-04-04",
+    "Updated_Date": "2025-05-24",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 34,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 19.26,
+    "Address": "House No 34, Lane 10, Zone 1",
+    "Coordinates": "19.872863,73.93373",
+    "Created_Date": "2025-04-17",
+    "Updated_Date": "2025-05-27",
+    "Area_ID": 1
+  },
+  {
+    "House_ID": 35,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 13.97,
+    "Address": "House No 35, Lane 15, Zone 19",
+    "Coordinates": "18.428859,75.522799",
+    "Created_Date": "2025-04-21",
+    "Updated_Date": "2025-05-13",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 36,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 0.53,
+    "Address": "House No 36, Lane 20, Zone 19",
+    "Coordinates": "18.385715,73.257583",
+    "Created_Date": "2025-04-20",
+    "Updated_Date": "2025-05-29",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 37,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.92,
+    "Address": "House No 37, Lane 19, Zone 18",
+    "Coordinates": "16.848438,77.925196",
+    "Created_Date": "2025-04-01",
+    "Updated_Date": "2025-05-29",
+    "Area_ID": 18
+  },
+  {
+    "House_ID": 38,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.32,
+    "Address": "House No 38, Lane 7, Zone 5",
+    "Coordinates": "18.42772,75.631581",
+    "Created_Date": "2025-04-19",
+    "Updated_Date": "2025-05-05",
+    "Area_ID": 5
+  },
+  {
+    "House_ID": 39,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 0.99,
+    "Address": "House No 39, Lane 11, Zone 19",
+    "Coordinates": "20.086574,75.46949",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-23",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 40,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.86,
+    "Address": "House No 40, Lane 13, Zone 3",
+    "Coordinates": "17.596048,75.61287",
+    "Created_Date": "2025-04-04",
+    "Updated_Date": "2025-05-10",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 41,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 9.75,
+    "Address": "House No 41, Lane 20, Zone 4",
+    "Coordinates": "19.540021,77.530744",
+    "Created_Date": "2025-04-22",
+    "Updated_Date": "2025-05-24",
+    "Area_ID": 4
+  },
+  {
+    "House_ID": 42,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 12.59,
+    "Address": "House No 42, Lane 6, Zone 17",
+    "Coordinates": "16.535834,74.997234",
+    "Created_Date": "2025-04-18",
+    "Updated_Date": "2025-05-16",
+    "Area_ID": 17
+  },
+  {
+    "House_ID": 43,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.28,
+    "Address": "House No 43, Lane 18, Zone 4",
+    "Coordinates": "20.405385,72.643492",
+    "Created_Date": "2025-04-06",
+    "Updated_Date": "2025-05-21",
+    "Area_ID": 4
+  },
+  {
+    "House_ID": 44,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 9.63,
+    "Address": "House No 44, Lane 9, Zone 6",
+    "Coordinates": "20.442528,77.677462",
+    "Created_Date": "2025-04-04",
+    "Updated_Date": "2025-05-12",
+    "Area_ID": 6
+  },
+  {
+    "House_ID": 45,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.05,
+    "Address": "House No 45, Lane 5, Zone 9",
+    "Coordinates": "19.98438,77.083832",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-17",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 46,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.83,
+    "Address": "House No 46, Lane 8, Zone 7",
+    "Coordinates": "18.23788,78.010921",
+    "Created_Date": "2025-04-26",
+    "Updated_Date": "2025-05-16",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 47,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 4.31,
+    "Address": "House No 47, Lane 7, Zone 3",
+    "Coordinates": "17.032533,76.502518",
+    "Created_Date": "2025-04-21",
+    "Updated_Date": "2025-05-22",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 48,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.39,
+    "Address": "House No 48, Lane 8, Zone 8",
+    "Coordinates": "19.833387,74.381173",
+    "Created_Date": "2025-04-30",
+    "Updated_Date": "2025-05-28",
+    "Area_ID": 8
+  },
+  {
+    "House_ID": 49,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 6.68,
+    "Address": "House No 49, Lane 12, Zone 13",
+    "Coordinates": "19.944093,73.722696",
+    "Created_Date": "2025-04-24",
+    "Updated_Date": "2025-05-16",
+    "Area_ID": 13
+  },
+  {
+    "House_ID": 50,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.81,
+    "Address": "House No 50, Lane 2, Zone 19",
+    "Coordinates": "18.415797,78.690763",
+    "Created_Date": "2025-04-18",
+    "Updated_Date": "2025-05-07",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 51,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 3.1,
+    "Address": "House No 51, Lane 11, Zone 9",
+    "Coordinates": "20.568294,73.488775",
+    "Created_Date": "2025-04-07",
+    "Updated_Date": "2025-05-05",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 52,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 7.23,
+    "Address": "House No 52, Lane 11, Zone 15",
+    "Coordinates": "19.895681,76.188411",
+    "Created_Date": "2025-04-12",
+    "Updated_Date": "2025-05-07",
+    "Area_ID": 15
+  },
+  {
+    "House_ID": 53,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 3.14,
+    "Address": "House No 53, Lane 12, Zone 7",
+    "Coordinates": "17.795517,73.861574",
+    "Created_Date": "2025-04-25",
+    "Updated_Date": "2025-05-18",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 54,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.4,
+    "Address": "House No 54, Lane 14, Zone 10",
+    "Coordinates": "19.751191,77.691542",
+    "Created_Date": "2025-04-26",
+    "Updated_Date": "2025-05-10",
+    "Area_ID": 10
+  },
+  {
+    "House_ID": 55,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.08,
+    "Address": "House No 55, Lane 17, Zone 6",
+    "Coordinates": "16.618813,76.737381",
+    "Created_Date": "2025-04-06",
+    "Updated_Date": "2025-05-13",
+    "Area_ID": 6
+  },
+  {
+    "House_ID": 56,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 0.64,
+    "Address": "House No 56, Lane 8, Zone 10",
+    "Coordinates": "18.674586,75.866566",
+    "Created_Date": "2025-04-01",
+    "Updated_Date": "2025-05-15",
+    "Area_ID": 10
+  },
+  {
+    "House_ID": 57,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 19.09,
+    "Address": "House No 57, Lane 15, Zone 15",
+    "Coordinates": "17.26318,74.764799",
+    "Created_Date": "2025-05-01",
+    "Updated_Date": "2025-05-04",
+    "Area_ID": 15
+  },
+  {
+    "House_ID": 58,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.95,
+    "Address": "House No 58, Lane 17, Zone 4",
+    "Coordinates": "19.986422,73.599655",
+    "Created_Date": "2025-04-03",
+    "Updated_Date": "2025-05-08",
+    "Area_ID": 4
+  },
+  {
+    "House_ID": 59,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.81,
+    "Address": "House No 59, Lane 4, Zone 3",
+    "Coordinates": "21.25044,72.93395",
+    "Created_Date": "2025-04-09",
+    "Updated_Date": "2025-05-21",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 60,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.88,
+    "Address": "House No 60, Lane 8, Zone 8",
+    "Coordinates": "19.052435,78.933245",
+    "Created_Date": "2025-04-06",
+    "Updated_Date": "2025-05-24",
+    "Area_ID": 8
+  },
+  {
+    "House_ID": 61,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.13,
+    "Address": "House No 61, Lane 14, Zone 7",
+    "Coordinates": "19.441579,74.963166",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-13",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 62,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 17.12,
+    "Address": "House No 62, Lane 18, Zone 16",
+    "Coordinates": "20.206597,73.735211",
+    "Created_Date": "2025-05-01",
+    "Updated_Date": "2025-05-02",
+    "Area_ID": 16
+  },
+  {
+    "House_ID": 63,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.18,
+    "Address": "House No 63, Lane 19, Zone 3",
+    "Coordinates": "18.427534,78.976108",
+    "Created_Date": "2025-04-07",
+    "Updated_Date": "2025-05-23",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 64,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.11,
+    "Address": "House No 64, Lane 7, Zone 9",
+    "Coordinates": "21.321456,78.885626",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-08",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 65,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.04,
+    "Address": "House No 65, Lane 9, Zone 9",
+    "Coordinates": "17.08551,78.009608",
+    "Created_Date": "2025-04-09",
+    "Updated_Date": "2025-05-15",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 66,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.51,
+    "Address": "House No 66, Lane 4, Zone 15",
+    "Coordinates": "16.821514,75.516905",
+    "Created_Date": "2025-04-18",
+    "Updated_Date": "2025-05-16",
+    "Area_ID": 15
+  },
+  {
+    "House_ID": 67,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 0.74,
+    "Address": "House No 67, Lane 20, Zone 4",
+    "Coordinates": "17.417349,74.355471",
+    "Created_Date": "2025-04-26",
+    "Updated_Date": "2025-05-24",
+    "Area_ID": 4
+  },
+  {
+    "House_ID": 68,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 11.56,
+    "Address": "House No 68, Lane 16, Zone 8",
+    "Coordinates": "19.930453,72.572691",
+    "Created_Date": "2025-04-05",
+    "Updated_Date": "2025-05-11",
+    "Area_ID": 8
+  },
+  {
+    "House_ID": 69,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.33,
+    "Address": "House No 69, Lane 15, Zone 19",
+    "Coordinates": "19.601567,77.468421",
+    "Created_Date": "2025-05-01",
+    "Updated_Date": "2025-05-18",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 70,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 6.46,
+    "Address": "House No 70, Lane 11, Zone 5",
+    "Coordinates": "19.964741,77.622261",
+    "Created_Date": "2025-04-20",
+    "Updated_Date": "2025-05-20",
+    "Area_ID": 5
+  },
+  {
+    "House_ID": 71,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 3.26,
+    "Address": "House No 71, Lane 20, Zone 11",
+    "Coordinates": "20.730493,72.944766",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-30",
+    "Area_ID": 11
+  },
+  {
+    "House_ID": 72,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 14.85,
+    "Address": "House No 72, Lane 3, Zone 7",
+    "Coordinates": "21.462228,73.977731",
+    "Created_Date": "2025-04-25",
+    "Updated_Date": "2025-05-06",
+    "Area_ID": 7
+  },
+  {
+    "House_ID": 73,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.33,
+    "Address": "House No 73, Lane 6, Zone 15",
+    "Coordinates": "18.828091,72.732687",
+    "Created_Date": "2025-04-19",
+    "Updated_Date": "2025-05-14",
+    "Area_ID": 15
+  },
+  {
+    "House_ID": 74,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 9.96,
+    "Address": "House No 74, Lane 19, Zone 15",
+    "Coordinates": "18.286073,74.977863",
+    "Created_Date": "2025-04-26",
+    "Updated_Date": "2025-05-19",
+    "Area_ID": 15
+  },
+  {
+    "House_ID": 75,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.18,
+    "Address": "House No 75, Lane 3, Zone 1",
+    "Coordinates": "20.542454,72.698662",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-07",
+    "Area_ID": 1
+  },
+  {
+    "House_ID": 76,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.57,
+    "Address": "House No 76, Lane 4, Zone 11",
+    "Coordinates": "17.262682,75.846856",
+    "Created_Date": "2025-04-02",
+    "Updated_Date": "2025-05-22",
+    "Area_ID": 11
+  },
+  {
+    "House_ID": 77,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.6,
+    "Address": "House No 77, Lane 5, Zone 6",
+    "Coordinates": "18.526901,78.140592",
+    "Created_Date": "2025-04-26",
+    "Updated_Date": "2025-05-20",
+    "Area_ID": 6
+  },
+  {
+    "House_ID": 78,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.53,
+    "Address": "House No 78, Lane 18, Zone 9",
+    "Coordinates": "19.427563,75.419911",
+    "Created_Date": "2025-04-04",
+    "Updated_Date": "2025-05-31",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 79,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 7.1,
+    "Address": "House No 79, Lane 18, Zone 18",
+    "Coordinates": "19.660707,72.559046",
+    "Created_Date": "2025-04-22",
+    "Updated_Date": "2025-05-15",
+    "Area_ID": 18
+  },
+  {
+    "House_ID": 80,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.0,
+    "Address": "House No 80, Lane 19, Zone 2",
+    "Coordinates": "20.497584,75.676535",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-30",
+    "Area_ID": 2
+  },
+  {
+    "House_ID": 81,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 0.51,
+    "Address": "House No 81, Lane 16, Zone 20",
+    "Coordinates": "17.984119,74.216935",
+    "Created_Date": "2025-04-30",
+    "Updated_Date": "2025-05-08",
+    "Area_ID": 20
+  },
+  {
+    "House_ID": 82,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 18.96,
+    "Address": "House No 82, Lane 4, Zone 3",
+    "Coordinates": "18.143667,76.668849",
+    "Created_Date": "2025-04-07",
+    "Updated_Date": "2025-05-11",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 83,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.5,
+    "Address": "House No 83, Lane 20, Zone 18",
+    "Coordinates": "21.381454,78.178707",
+    "Created_Date": "2025-04-12",
+    "Updated_Date": "2025-05-02",
+    "Area_ID": 18
+  },
+  {
+    "House_ID": 84,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 12.46,
+    "Address": "House No 84, Lane 10, Zone 9",
+    "Coordinates": "19.402815,78.702597",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-16",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 85,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 13.22,
+    "Address": "House No 85, Lane 12, Zone 9",
+    "Coordinates": "17.544523,75.140058",
+    "Created_Date": "2025-04-03",
+    "Updated_Date": "2025-05-12",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 86,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 16.31,
+    "Address": "House No 86, Lane 18, Zone 8",
+    "Coordinates": "18.60766,77.034776",
+    "Created_Date": "2025-04-28",
+    "Updated_Date": "2025-05-13",
+    "Area_ID": 8
+  },
+  {
+    "House_ID": 87,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 11.88,
+    "Address": "House No 87, Lane 10, Zone 16",
+    "Coordinates": "19.043407,74.893701",
+    "Created_Date": "2025-04-03",
+    "Updated_Date": "2025-05-20",
+    "Area_ID": 16
+  },
+  {
+    "House_ID": 88,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 0.89,
+    "Address": "House No 88, Lane 15, Zone 1",
+    "Coordinates": "18.784377,77.15964",
+    "Created_Date": "2025-04-05",
+    "Updated_Date": "2025-05-06",
+    "Area_ID": 1
+  },
+  {
+    "House_ID": 89,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 9.95,
+    "Address": "House No 89, Lane 15, Zone 13",
+    "Coordinates": "16.545388,78.508303",
+    "Created_Date": "2025-04-23",
+    "Updated_Date": "2025-05-05",
+    "Area_ID": 13
+  },
+  {
+    "House_ID": 90,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.63,
+    "Address": "House No 90, Lane 10, Zone 16",
+    "Coordinates": "21.253987,78.491574",
+    "Created_Date": "2025-04-20",
+    "Updated_Date": "2025-05-09",
+    "Area_ID": 16
+  },
+  {
+    "House_ID": 91,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.73,
+    "Address": "House No 91, Lane 7, Zone 10",
+    "Coordinates": "19.88343,78.187705",
+    "Created_Date": "2025-04-22",
+    "Updated_Date": "2025-05-07",
+    "Area_ID": 10
+  },
+  {
+    "House_ID": 92,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 2.17,
+    "Address": "House No 92, Lane 19, Zone 3",
+    "Coordinates": "20.271219,73.037372",
+    "Created_Date": "2025-04-23",
+    "Updated_Date": "2025-05-09",
+    "Area_ID": 3
+  },
+  {
+    "House_ID": 93,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.74,
+    "Address": "House No 93, Lane 15, Zone 4",
+    "Coordinates": "17.398624,74.487855",
+    "Created_Date": "2025-04-18",
+    "Updated_Date": "2025-05-24",
+    "Area_ID": 4
+  },
+  {
+    "House_ID": 94,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.64,
+    "Address": "House No 94, Lane 17, Zone 15",
+    "Coordinates": "18.885789,78.573688",
+    "Created_Date": "2025-04-24",
+    "Updated_Date": "2025-05-22",
+    "Area_ID": 15
+  },
+  {
+    "House_ID": 95,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 7.68,
+    "Address": "House No 95, Lane 11, Zone 19",
+    "Coordinates": "19.948813,78.803145",
+    "Created_Date": "2025-04-05",
+    "Updated_Date": "2025-05-26",
+    "Area_ID": 19
+  },
+  {
+    "House_ID": 96,
+    "Property_Type": "Residential + Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.84,
+    "Address": "House No 96, Lane 17, Zone 11",
+    "Coordinates": "16.532009,77.56641",
+    "Created_Date": "2025-04-12",
+    "Updated_Date": "2025-05-11",
+    "Area_ID": 11
+  },
+  {
+    "House_ID": 97,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 15.71,
+    "Address": "House No 97, Lane 15, Zone 14",
+    "Coordinates": "17.330888,75.440029",
+    "Created_Date": "2025-04-21",
+    "Updated_Date": "2025-05-20",
+    "Area_ID": 14
+  },
+  {
+    "House_ID": 98,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 8.66,
+    "Address": "House No 98, Lane 18, Zone 9",
+    "Coordinates": "19.071494,73.276693",
+    "Created_Date": "2025-04-24",
+    "Updated_Date": "2025-05-20",
+    "Area_ID": 9
+  },
+  {
+    "House_ID": 99,
+    "Property_Type": "Commercial",
+    "Waste_Generated_Kg_Per_Day": 5.55,
+    "Address": "House No 99, Lane 19, Zone 6",
+    "Coordinates": "18.701936,72.681934",
+    "Created_Date": "2025-04-10",
+    "Updated_Date": "2025-05-28",
+    "Area_ID": 6
+  },
+  {
+    "House_ID": 100,
+    "Property_Type": "Residential",
+    "Waste_Generated_Kg_Per_Day": 1.7,
+    "Address": "House No 100, Lane 9, Zone 15",
+    "Coordinates": "20.876075,76.314431",
+    "Created_Date": "2025-04-29",
+    "Updated_Date": "2025-05-31",
+    "Area_ID": 15
+  }
+]
