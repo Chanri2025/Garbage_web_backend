@@ -2,7 +2,7 @@
 
 const GarbageCollection = require("../models/garbageCollection.model");
 
-// GET all records
+// GET all house-wise records
 exports.getAllGarbageCollections = async (req, res) => {
   try {
     const data = await GarbageCollection.find();
@@ -12,7 +12,7 @@ exports.getAllGarbageCollections = async (req, res) => {
   }
 };
 
-// CREATE a new record
+// CREATE a new house-wise record
 exports.createGarbageCollection = async (req, res) => {
   try {
     const newRecord = new GarbageCollection(req.body);
@@ -23,7 +23,7 @@ exports.createGarbageCollection = async (req, res) => {
   }
 };
 
-// GET by ID
+// GET house-wise record by ID
 exports.getGarbageCollectionById = async (req, res) => {
   try {
     const record = await GarbageCollection.findById(req.params.id);
@@ -34,7 +34,7 @@ exports.getGarbageCollectionById = async (req, res) => {
   }
 };
 
-// UPDATE by ID
+// UPDATE house-wise record by ID
 exports.updateGarbageCollection = async (req, res) => {
   try {
     const updated = await GarbageCollection.findByIdAndUpdate(
@@ -49,7 +49,7 @@ exports.updateGarbageCollection = async (req, res) => {
   }
 };
 
-// DELETE by ID
+// DELETE house-wise record by ID
 exports.deleteGarbageCollection = async (req, res) => {
   try {
     const deleted = await GarbageCollection.findByIdAndDelete(req.params.id);
