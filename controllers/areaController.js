@@ -25,7 +25,7 @@ const sanitizeAreaInput = (data) => {
 
 // Get all areas
 exports.getAllAreas = (req, res, next) => {
-  db.query("SELECT * FROM Area_Details", (err, results) => {
+  db.query("SELECT * FROM area_details", (err, results) => {
     if (err) return next(err);
     res.json(results);
   });
@@ -46,7 +46,7 @@ exports.createArea = async (req, res, next) => {
 
     // Validate Zone_ID if provided
     if (Zone_ID) {
-      const isZoneValid = await validateForeignKey("Zone_Details", "Zone_ID", Zone_ID);
+      const isZoneValid = await validateForeignKey("zone_details", "Zone_ID", Zone_ID);
       if (!isZoneValid) {
         return res.status(400).json({ error: "Invalid Zone_ID - zone not found" });
       }
@@ -54,7 +54,7 @@ exports.createArea = async (req, res, next) => {
 
     // Validate WARD_ID if provided
     if (WARD_ID) {
-      const isWardValid = await validateForeignKey("Ward_Details", "Ward_ID", WARD_ID);
+      const isWardValid = await validateForeignKey("ward_details", "Ward_ID", WARD_ID);
       if (!isWardValid) {
         return res.status(400).json({ error: "Invalid WARD_ID - ward not found" });
       }
@@ -63,7 +63,7 @@ exports.createArea = async (req, res, next) => {
       if (Zone_ID) {
         const [ward] = await new Promise((resolve, reject) => {
           db.query(
-            "SELECT Zone_ID FROM Ward_Details WHERE Ward_ID = ?",
+            "SELECT Zone_ID FROM ward_details WHERE Ward_ID = ?",
             [WARD_ID],
             (err, results) => {
               if (err) return reject(err);
@@ -97,7 +97,7 @@ exports.createArea = async (req, res, next) => {
       Update_Date: now,
     };
 
-    db.query("INSERT INTO Area_Details SET ?", data, (err, result) => {
+    db.query("INSERT INTO area_details SET ?", data, (err, result) => {
       if (err) {
         if (err.code === "ER_DUP_ENTRY") {
           return res.status(400).json({ error: "Area_ID already exists" });
@@ -136,7 +136,7 @@ exports.updateArea = async (req, res, next) => {
 
     // Validate Zone_ID if provided
     if (Zone_ID) {
-      const isZoneValid = await validateForeignKey("Zone_Details", "Zone_ID", Zone_ID);
+      const isZoneValid = await validateForeignKey("zone_details", "Zone_ID", Zone_ID);
       if (!isZoneValid) {
         return res.status(400).json({ error: "Invalid Zone_ID - zone not found" });
       }
@@ -144,7 +144,7 @@ exports.updateArea = async (req, res, next) => {
 
     // Validate WARD_ID if provided
     if (WARD_ID) {
-      const isWardValid = await validateForeignKey("Ward_Details", "Ward_ID", WARD_ID);
+      const isWardValid = await validateForeignKey("ward_details", "Ward_ID", WARD_ID);
       if (!isWardValid) {
         return res.status(400).json({ error: "Invalid WARD_ID - ward not found" });
       }
@@ -153,7 +153,7 @@ exports.updateArea = async (req, res, next) => {
       if (Zone_ID) {
         const [ward] = await new Promise((resolve, reject) => {
           db.query(
-            "SELECT Zone_ID FROM Ward_Details WHERE Ward_ID = ?",
+            "SELECT Zone_ID FROM ward_details WHERE Ward_ID = ?",
             [WARD_ID],
             (err, results) => {
               if (err) return reject(err);
@@ -186,7 +186,7 @@ exports.updateArea = async (req, res, next) => {
 
     // Update area
     db.query(
-      "UPDATE Area_Details SET ? WHERE Area_ID = ?",
+      "UPDATE area_details SET ? WHERE Area_ID = ?",
       [data, id],
       (err, result) => {
         if (err) return next(err);
@@ -215,7 +215,7 @@ exports.deleteArea = (req, res, next) => {
   }
 
   db.query(
-    "DELETE FROM Area_Details WHERE Area_ID = ?",
+    "DELETE FROM area_details WHERE Area_ID = ?",
     [id],
     (err, result) => {
       if (err) return next(err);

@@ -5,7 +5,7 @@ const QRCode = require("qrcode");
 
 // READ: Get all dump yards
 exports.getAllDumpYards = (req, res) => {
-  db.query("SELECT * FROM Dump_Yard_Details", (err, results) => {
+  db.query("SELECT * FROM dump_yard_details", (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
@@ -21,7 +21,7 @@ exports.createDumpYard = async (req, res) => {
     // Optional: Check if this DY_ID already exists to prevent duplicates
     const [existing] = await db
       .promise()
-      .query("SELECT * FROM Dump_Yard_Details WHERE DY_ID = ?", [dumpYardId]);
+      .query("SELECT * FROM dump_yard_details WHERE DY_ID = ?", [dumpYardId]);
 
     if (existing.length > 0) {
       return res.status(400).json({ error: "Dump Yard ID already exists" });
@@ -30,7 +30,7 @@ exports.createDumpYard = async (req, res) => {
     // --- Referential integrity check for Ward_ID ---
     // Make sure the provided Ward_ID exists in Ward_Details and fetch Zone_ID
     const [wardRows] = await db.promise().query(
-      "SELECT Zone_ID FROM Ward_Details WHERE Ward_ID = ?",
+      "SELECT Zone_ID FROM ward_details WHERE Ward_ID = ?",
       [data.Ward_ID]
     );
     if (wardRows.length === 0) {
@@ -41,7 +41,7 @@ exports.createDumpYard = async (req, res) => {
     // --- End check ---
 
     // Insert the dump yard record with user-defined DY_ID
-    await db.promise().query("INSERT INTO Dump_Yard_Details SET ?", data);
+    await db.promise().query("INSERT INTO dump_yard_details SET ?", data);
 
     // Generate QR data using the provided DY_ID and DY_Name
     const dumpYardName = data.DY_Name || "DumpYard";
@@ -67,7 +67,7 @@ exports.createDumpYard = async (req, res) => {
     // Update the record with the QR code URL
     await db
       .promise()
-      .query("UPDATE Dump_Yard_Details SET DY_QR_Url = ? WHERE DY_ID = ?", [
+      .query("UPDATE dump_yard_details SET DY_QR_Url = ? WHERE DY_ID = ?", [
         qrUrl,
         dumpYardId,
       ]);
@@ -93,7 +93,7 @@ exports.updateDumpYard = async (req, res) => {
     const [currentRows] = await db
       .promise()
       .query(
-        "SELECT DY_QR_Url, DY_Name FROM Dump_Yard_Details WHERE DY_ID = ?",
+        "SELECT DY_QR_Url, DY_Name FROM dump_yard_details WHERE DY_ID = ?",
         [dumpYardId]
       );
     if (currentRows.length === 0) {
@@ -107,7 +107,7 @@ exports.updateDumpYard = async (req, res) => {
     // --- Referential integrity check for Ward_ID on update ---
     if (newData.Ward_ID) {
       const [wardRows] = await db.promise().query(
-        "SELECT Zone_ID FROM Ward_Details WHERE Ward_ID = ?",
+        "SELECT Zone_ID FROM ward_details WHERE Ward_ID = ?",
         [newData.Ward_ID]
       );
       if (wardRows.length === 0) {
@@ -121,7 +121,7 @@ exports.updateDumpYard = async (req, res) => {
     // First, update the dump yard record with the new data (excluding QR code).
     await db
       .promise()
-      .query("UPDATE Dump_Yard_Details SET ? WHERE DY_ID = ?", [
+      .query("UPDATE dump_yard_details SET ? WHERE DY_ID = ?", [
         newData,
         dumpYardId,
       ]);
@@ -157,7 +157,7 @@ exports.updateDumpYard = async (req, res) => {
     // Update the record with the new QR code URL.
     await db
       .promise()
-      .query("UPDATE Dump_Yard_Details SET DY_QR_Url = ? WHERE DY_ID = ?", [
+      .query("UPDATE dump_yard_details SET DY_QR_Url = ? WHERE DY_ID = ?", [
         newQrUrl,
         dumpYardId,
       ]);
@@ -165,7 +165,7 @@ exports.updateDumpYard = async (req, res) => {
     // Retrieve the updated record.
     const [updatedRows] = await db
       .promise()
-      .query("SELECT * FROM Dump_Yard_Details WHERE DY_ID = ?", [dumpYardId]);
+      .query("SELECT * FROM dump_yard_details WHERE DY_ID = ?", [dumpYardId]);
     res.json({ message: "Dump yard updated", data: updatedRows[0] });
   } catch (err) {
     console.error(err);
@@ -180,7 +180,7 @@ exports.deleteDumpYard = async (req, res) => {
     // Retrieve the current dump yard record to get the QR code URL.
     const [rows] = await db
       .promise()
-      .query("SELECT DY_QR_Url FROM Dump_Yard_Details WHERE DY_ID = ?", [
+      .query("SELECT DY_QR_Url FROM dump_yard_details WHERE DY_ID = ?", [
         dumpYardId,
       ]);
     if (rows.length === 0) {
@@ -202,7 +202,7 @@ exports.deleteDumpYard = async (req, res) => {
     // Delete the dump yard record from the database.
     await db
       .promise()
-      .query("DELETE FROM Dump_Yard_Details WHERE DY_ID = ?", [dumpYardId]);
+      .query("DELETE FROM dump_yard_details WHERE DY_ID = ?", [dumpYardId]);
     res.json({ message: "Dump yard and associated QR image deleted" });
   } catch (err) {
     console.error(err);
