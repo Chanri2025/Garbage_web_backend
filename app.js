@@ -29,6 +29,7 @@ const dailyAttendanceLogRoutes = require("./routes/dailyAttendanceLog.routes");
 const houseRoutes = require("./routes/houseRegistration.routes");
 const carbonFootprintDetailsRoutes = require("./routes/carbonFootprintDetails.routes");
 const areaWiseGarbageCollectionRoutes = require("./routes/areaWiseGarbageCollection.route");
+const authRoutes = require("./routes/authRoutes");
 
 // SQL API Endpoints
 app.use("/api/employees", employeeRoutes);
@@ -41,6 +42,9 @@ app.use("/api/areas", areaRoutes);
 app.use("/api/dumpYards", dumpYardRoutes);
 app.use("/api/iplogs", ipLogRoutes);
 app.use("/api/zones", zoneRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", authRoutes);
+app.use("/", authRoutes);
 
 // MongoDB API Endpoints
 app.use("/api/garbageCollections", garbageCollectionRoutes);
