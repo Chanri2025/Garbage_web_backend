@@ -28,6 +28,8 @@ const garbageCollectionRoutes = require("./routes/GarbageCollection.route");
 const dailyAttendanceLogRoutes = require("./routes/dailyAttendanceLog.routes");
 const houseRoutes = require("./routes/houseRegistration.routes");
 const carbonFootprintDetailsRoutes = require("./routes/carbonFootprintDetails.routes");
+const areaWiseGarbageCollectionRoutes = require("./routes/areaWiseGarbageCollection.route");
+const authRoutes = require("./routes/authRoutes");
 
 // SQL API Endpoints
 app.use("/api/employees", employeeRoutes);
@@ -40,9 +42,13 @@ app.use("/api/areas", areaRoutes);
 app.use("/api/dumpYards", dumpYardRoutes);
 app.use("/api/iplogs", ipLogRoutes);
 app.use("/api/zones", zoneRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", authRoutes);
+app.use("/", authRoutes);
 
 // MongoDB API Endpoints
 app.use("/api/garbageCollections", garbageCollectionRoutes);
+app.use("/api/garbage_collection_areaWise", areaWiseGarbageCollectionRoutes);
 app.use("/api/attendanceLogs", dailyAttendanceLogRoutes);
 app.use("/api/houses", houseRoutes);
 app.use("/api/carbonFootprintDetails", carbonFootprintDetailsRoutes);
@@ -51,7 +57,7 @@ app.get("/", (req, res) => {
   res.send("SWM API is running");
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000 ;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

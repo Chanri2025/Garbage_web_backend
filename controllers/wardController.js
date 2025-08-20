@@ -1,7 +1,7 @@
 const db = require("../config/db.sql");
 
 exports.getAllWards = (req, res) => {
-  db.query("SELECT * FROM Ward_Details", (err, results) => {
+  db.query("SELECT * FROM ward_details", (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
@@ -15,7 +15,7 @@ exports.getWardsByZone = (req, res) => {
     return res.status(400).json({ error: "Zone ID is required" });
   }
 
-  db.query("SELECT * FROM Ward_Details WHERE Zone_ID = ?", [zoneId], (err, results) => {
+  db.query("SELECT * FROM ward_details WHERE Zone_ID = ?", [zoneId], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
@@ -32,14 +32,14 @@ exports.createWard = (req, res) => {
         return res.status(400).json({ error: "Zone_ID does not exist in zone_details." });
       }
       // Proceed to insert
-      db.query("INSERT INTO Ward_Details SET ?", data, (err2, result) => {
+      db.query("INSERT INTO ward_details SET ?", data, (err2, result) => {
         if (err2) return res.status(500).json({ error: err2.message });
         res.status(201).json({ message: "Ward created", id: result.insertId });
       });
     });
   } else {
     // No Zone_ID, insert as is
-    db.query("INSERT INTO Ward_Details SET ?", data, (err, result) => {
+    db.query("INSERT INTO ward_details SET ?", data, (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
       res.status(201).json({ message: "Ward created", id: result.insertId });
     });
@@ -71,7 +71,7 @@ exports.updateWard = (req, res) => {
 
   const proceedUpdate = () => {
     const query = `
-      UPDATE Ward_Details
+      UPDATE ward_details
       SET Ward_ID = ?, Ward_Name = ?, Zone_ID = ?, Updated_Date = ?
       WHERE Ward_ID = ?
     `;

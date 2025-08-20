@@ -3,7 +3,7 @@ const Vehicle = require("../models/vehicleModel");
 
 // Get all vehicles
 exports.getAllVehicles = (req, res) => {
-  db.query("SELECT * FROM Vehicle_Details", (err, results) => {
+  db.query("SELECT * FROM vehicle_details", (err, results) => {
     if (err) {
       return res.status(500).json({ error: "Failed to fetch vehicles" });
     }
