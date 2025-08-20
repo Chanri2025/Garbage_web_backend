@@ -8,5 +8,5 @@ PORT=5000
 export HOST=$HOST
 export PORT=$PORT
 
-# Start the Node.js server in development mode
-exec npm run dev
+# Start the Node.js server with PM2
+pm2 start app.js --name $APP_NAME --env production
