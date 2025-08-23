@@ -54,8 +54,13 @@ exports.login = async (req, res) => {
           process.env.JWT_SECRET || "yoursecretkey",
           { expiresIn: "1d" }
         );
-        // Ensure role is included in the response
-        return res.json({ success: true, user: { ...rows[0], role: "employee" }, token });
+        
+        // Return token in response instead of setting cookie
+        return res.json({ 
+          success: true, 
+          token: token,
+          user: { ...rows[0], role: "employee" } 
+        });
       } catch (sqlError) {
         console.error("SQL error during login:", sqlError);
         return res.status(500).json({ success: false, message: "SQL error during login" });
@@ -69,7 +74,13 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET || "yoursecretkey",
       { expiresIn: "1d" }
     );
-    res.json({ success: true, user: userData, token });
+    
+    // Return token in response instead of setting cookie
+    res.json({ 
+      success: true, 
+      token: token,
+      user: userData 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
   }
@@ -127,6 +138,84 @@ exports.registerEmployee = async (req, res) => {
     const { password: _, ...employeeData } = employee.toObject();
     res.status(201).json({ success: true, user: employeeData });
   } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Get current user profile
+exports.getCurrentUser = async (req, res) => {
+  try {
+    // req.user is set by the auth middleware
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "User not authenticated" });
+    }
+
+    // Get the user model based on role
+    const getUserModel = (role) => {
+      switch (role) {
+        case "admin": return Admin;
+        case "citizen": return Citizen;
+        case "employee": return Employee;
+        default: return null;
+      }
+    };
+
+    const UserModel = getUserModel(req.user.role);
+    if (!UserModel) {
+      return res.status(400).json({ success: false, message: "Invalid user role" });
+    }
+
+    // Fetch fresh user data
+    const user = await UserModel.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // For employees, also fetch SQL details
+    let userData = { ...user.toObject() };
+    
+    if (req.user.role === "employee" && user.employeeId) {
+      try {
+        const sql = require("../config/db.sql");
+        const [rows] = await sql.promise().query(
+          "SELECT * FROM employee_table WHERE Emp_ID = ?",
+          [user.employeeId]
+        );
+        
+        if (rows.length > 0) {
+          // Merge SQL data with MongoDB data
+          userData = { ...userData, ...rows[0] };
+        }
+      } catch (sqlError) {
+        console.error("SQL error fetching employee details:", sqlError);
+        // Continue without SQL data if there's an error
+      }
+    }
+
+    // Remove sensitive information
+    const { password, ...safeUserData } = userData;
+
+    res.json({
+      success: true,
+      user: safeUserData
+    });
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Logout function
+exports.logout = async (req, res) => {
+  try {
+    // Since we're not using cookies, just return success
+    // Frontend should clear the stored token
+    res.json({
+      success: true,
+      message: "Logged out successfully"
+    });
+  } catch (error) {
+    console.error("Error during logout:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
