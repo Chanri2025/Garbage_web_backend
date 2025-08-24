@@ -2,11 +2,14 @@ const jwt = require("jsonwebtoken");
 const Admin = require("../models/admin.model");
 const Citizen = require("../models/citizen.model");
 const Employee = require("../models/employee.model");
+const Manager = require("../models/manager.model");
 const sql = require("../config/db.sql");
 
 const getUserModel = (role) => {
   switch (role) {
+    case "super-admin": return Admin; // Super-admin uses Admin model with special adminType
     case "admin": return Admin;
+    case "manager": return Manager;
     case "citizen": return Citizen;
     case "employee": return Employee;
     default: return null;
@@ -67,8 +70,17 @@ exports.login = async (req, res) => {
       }
     }
 
-    // For admin/citizen, return Mongo data
+    // For admin/citizen/manager, return Mongo data
     const { password: _, ...userData } = user.toObject();
+    
+    // For managers, check if they are approved
+    if (role === "manager" && !user.isApproved) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "Manager account is pending admin approval" 
+      });
+    }
+    
     const token = jwt.sign(
       { id: user._id, username: user.username, role: user.role },
       process.env.JWT_SECRET || "yoursecretkey",
@@ -86,17 +98,79 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.registerAdmin = async (req, res) => {
-  const { username, password, adminType } = req.body;
+// Register Super-Admin (highest level)
+exports.registerSuperAdmin = async (req, res) => {
+  const { username, password, name, email, phone } = req.body;
   try {
     const existing = await Admin.findOne({ username });
     if (existing) {
       return res.status(400).json({ success: false, message: "Username already exists" });
     }
-    const admin = new Admin({ username, password, adminType });
+    const superAdmin = new Admin({ 
+      username, 
+      password, 
+      name: name || username,
+      email,
+      phone,
+      role: "super-admin", 
+      adminType: "super" 
+    });
+    await superAdmin.save();
+    const { password: _, ...adminData } = superAdmin.toObject();
+    res.status(201).json({ success: true, user: adminData });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Register Admin
+exports.registerAdmin = async (req, res) => {
+  const { username, password, adminType, name, email, phone } = req.body;
+  try {
+    const existing = await Admin.findOne({ username });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "Username already exists" });
+    }
+    const admin = new Admin({ 
+      username, 
+      password, 
+      name: name || username,
+      email,
+      phone,
+      adminType 
+    });
     await admin.save();
     const { password: _, ...adminData } = admin.toObject();
     res.status(201).json({ success: true, user: adminData });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Register Manager (needs admin approval)
+exports.registerManager = async (req, res) => {
+  const { username, password, name, department, phone, email } = req.body;
+  try {
+    const existing = await Manager.findOne({ username });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "Username already exists" });
+    }
+    const manager = new Manager({ 
+      username, 
+      password, 
+      name,
+      department,
+      phone,
+      email,
+      isApproved: false // Needs admin approval
+    });
+    await manager.save();
+    const { password: _, ...managerData } = manager.toObject();
+    res.status(201).json({ 
+      success: true, 
+      user: managerData,
+      message: "Manager registration submitted for approval"
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
   }
@@ -153,7 +227,9 @@ exports.getCurrentUser = async (req, res) => {
     // Get the user model based on role
     const getUserModel = (role) => {
       switch (role) {
+        case "super-admin": return Admin;
         case "admin": return Admin;
+        case "manager": return Manager;
         case "citizen": return Citizen;
         case "employee": return Employee;
         default: return null;
@@ -216,6 +292,88 @@ exports.logout = async (req, res) => {
     });
   } catch (error) {
     console.error("Error during logout:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Admin functions for user approval
+exports.getPendingUsers = async (req, res) => {
+  try {
+    // Only admins and super-admins can view pending users
+    if (!['admin', 'super-admin'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Only admins can view pending users" });
+    }
+    
+    const pendingManagers = await Manager.find({ isApproved: false });
+    
+    res.json({
+      success: true,
+      pendingUsers: pendingManagers,
+      count: pendingManagers.length
+    });
+  } catch (error) {
+    console.error("Error fetching pending users:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.approveUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { comments } = req.body;
+    
+    // Only admins and super-admins can approve
+    if (!['admin', 'super-admin'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Only admins can approve users" });
+    }
+    
+    const manager = await Manager.findById(userId);
+    if (!manager) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    
+    if (manager.isApproved) {
+      return res.status(400).json({ success: false, message: "User is already approved" });
+    }
+    
+    manager.isApproved = true;
+    manager.approvedBy = req.user.id;
+    manager.approvedAt = new Date();
+    manager.updatedAt = new Date();
+    await manager.save();
+    
+    res.json({
+      success: true,
+      message: "User approved successfully",
+      user: manager
+    });
+  } catch (error) {
+    console.error("Error approving user:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.rejectUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { comments } = req.body;
+    
+    // Only admins and super-admins can reject
+    if (!['admin', 'super-admin'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Only admins can reject users" });
+    }
+    
+    const manager = await Manager.findByIdAndDelete(userId);
+    if (!manager) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    
+    res.json({
+      success: true,
+      message: "User registration rejected and removed"
+    });
+  } catch (error) {
+    console.error("Error rejecting user:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

@@ -38,6 +38,9 @@ const authRoutes = require("./routes/authRoutes");
 // Import Forum routes
 const forumRoutes = require("./routes/forumRoutes");
 
+// Import Approval routes
+const approvalRoutes = require("./routes/approvalRoutes");
+
 // SQL API Endpoints
 app.use("/api/employees", employeeRoutes);
 app.use("/api/devices", deviceRoutes);
@@ -63,8 +66,24 @@ app.use("/api/carbonFootprintDetails", carbonFootprintDetailsRoutes);
 // Forum API Endpoints
 app.use("/api/forum", forumRoutes);
 
+// Approval Workflow API Endpoints
+app.use("/api/approvals", approvalRoutes);
+
 app.get("/", (req, res) => {
-  res.send("SWM API is running");
+  res.json({
+    message: "SWM API with Role Hierarchy is running",
+    version: "1.1.0",
+    features: {
+      roleHierarchy: ["super-admin", "admin", "manager", "employee", "citizen"],
+      approvalWorkflow: true,
+      userManagement: true
+    },
+    endpoints: {
+      auth: "/api/auth",
+      approvals: "/api/approvals",
+      forum: "/api/forum"
+    }
+  });
 });
 
 // Initialize WebSocket server
