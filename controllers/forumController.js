@@ -542,7 +542,7 @@ exports.deleteReply = async (req, res) => {
       });
     }
 
-    reply.remove();
+    reply.deleteOne();
     await post.save();
 
     // Emit WebSocket event for reply deletion

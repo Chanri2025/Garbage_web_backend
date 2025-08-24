@@ -30,7 +30,7 @@ const ForumPostSchema = new mongoose.Schema({
     model: {
       type: String,
       required: true,
-      enum: ['Admin', 'Employee', 'Citizen']
+      enum: ['Admin', 'Employee', 'Citizen', 'Manager']
     },
     username: {
       type: String,
@@ -43,7 +43,7 @@ const ForumPostSchema = new mongoose.Schema({
     role: {
       type: String,
       required: true,
-      enum: ['admin', 'employee', 'citizen']
+      enum: ['admin', 'employee', 'citizen', 'manager']
     }
   },
   likes: [{
@@ -54,7 +54,7 @@ const ForumPostSchema = new mongoose.Schema({
     userRole: {
       type: String,
       required: true,
-      enum: ['admin', 'employee', 'citizen']
+      enum: ['admin', 'employee', 'citizen', 'manager']
     },
     username: {
       type: String,
@@ -82,7 +82,7 @@ const ForumPostSchema = new mongoose.Schema({
       model: {
         type: String,
         required: true,
-        enum: ['Admin', 'Employee', 'Citizen']
+        enum: ['Admin', 'Employee', 'Citizen', 'Manager']
       },
       username: {
         type: String,
@@ -95,7 +95,7 @@ const ForumPostSchema = new mongoose.Schema({
       role: {
         type: String,
         required: true,
-        enum: ['admin', 'employee', 'citizen']
+        enum: ['admin', 'employee', 'citizen', 'manager']
       }
     },
     likes: [{
@@ -106,7 +106,7 @@ const ForumPostSchema = new mongoose.Schema({
       userRole: {
         type: String,
         required: true,
-        enum: ['admin', 'employee', 'citizen']
+        enum: ['admin', 'employee', 'citizen', 'manager']
       },
       username: {
         type: String,

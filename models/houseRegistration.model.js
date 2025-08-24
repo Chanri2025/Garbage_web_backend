@@ -9,6 +9,7 @@ const houseRegistrationSchema = new mongoose.Schema({
   Created_Date: Date,
   Updated_Date: Date,
   Area_ID: Number,
+  Emp_ID: Number,
 });
 
 module.exports = mongoose.model("HouseDetails", houseRegistrationSchema, "house_details");
