@@ -28,6 +28,16 @@ router.post('/area/create', requireManagerOrHigher, approvalController.createAre
 router.put('/area/update/:id', requireManagerOrHigher, approvalController.updateAreaApprovalRequest);
 router.delete('/area/delete/:id', requireManagerOrHigher, approvalController.deleteAreaApprovalRequest);
 
+// Zone approval requests
+router.post('/zone/create', requireManagerOrHigher, approvalController.createZoneApprovalRequest);
+router.put('/zone/update/:id', requireManagerOrHigher, approvalController.updateZoneApprovalRequest);
+router.delete('/zone/delete/:id', requireManagerOrHigher, approvalController.deleteZoneApprovalRequest);
+
+// Ward approval requests
+router.post('/ward/create', requireManagerOrHigher, approvalController.createWardApprovalRequest);
+router.put('/ward/update/:id', requireManagerOrHigher, approvalController.updateWardApprovalRequest);
+router.delete('/ward/delete/:id', requireManagerOrHigher, approvalController.deleteWardApprovalRequest);
+
 // Dumpyard approval requests
 router.post('/dumpyard/create', requireManagerOrHigher, approvalController.createDumpyardApprovalRequest);
 

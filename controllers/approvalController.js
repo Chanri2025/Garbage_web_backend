@@ -74,6 +74,8 @@ const getModelName = (entityType) => {
     'employee': 'swm.employee_table',
     'vehicle': 'swm.vehicle_table', 
     'area': 'swm.area_details',
+    'zone': 'swm.zone_table',
+    'ward': 'swm.ward_table',
     'dumpyard': 'swm.dump_yard_table'
   };
   return modelMap[entityType] || entityType;
@@ -89,6 +91,8 @@ const getPriority = (operation, entityType, data) => {
   if (entityType === 'employee' && operation === 'UPDATE') return 'high';
   if (entityType === 'vehicle' && operation === 'CREATE') return 'medium';
   if (entityType === 'dumpyard') return 'medium';
+  if (entityType === 'zone' && operation === 'DELETE') return 'high';
+  if (entityType === 'ward' && operation === 'DELETE') return 'high';
   
   if (data && typeof data === 'object') {
     if (data.urgent || data.priority === 'urgent') return 'urgent';
@@ -104,6 +108,8 @@ const getCategory = (entityType) => {
     'employee': 'user-management',
     'vehicle': 'vehicle-management',
     'area': 'area-management',
+    'zone': 'area-management',
+    'ward': 'area-management',
     'dumpyard': 'infrastructure'
   };
   return categoryMap[entityType] || 'general';
@@ -448,6 +454,34 @@ exports.deleteAreaApprovalRequest = async (req, res) => {
 
 exports.createDumpyardApprovalRequest = async (req, res) => {
   await createApprovalRequest(req, res, 'dumpyard', 'CREATE');
+};
+
+// ========== ZONE APPROVAL ENDPOINTS ==========
+
+exports.createZoneApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'zone', 'CREATE');
+};
+
+exports.updateZoneApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'zone', 'UPDATE', req.params.id);
+};
+
+exports.deleteZoneApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'zone', 'DELETE', req.params.id);
+};
+
+// ========== WARD APPROVAL ENDPOINTS ==========
+
+exports.createWardApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'ward', 'CREATE');
+};
+
+exports.updateWardApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'ward', 'UPDATE', req.params.id);
+};
+
+exports.deleteWardApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'ward', 'DELETE', req.params.id);
 };
 
 // ========== ADMIN APPROVAL MANAGEMENT ==========

@@ -95,3 +95,43 @@ exports.updateWard = (req, res) => {
   validateZoneAndUpdate();
 };
 
+// DELETE: Remove a ward
+exports.deleteWard = (req, res) => {
+  const wardId = req.params.id;
+
+  if (!wardId) {
+    return res.status(400).json({ error: "Ward ID is required" });
+  }
+
+  // Check if ward exists before deleting
+  db.query("SELECT * FROM ward_details WHERE Ward_ID = ?", [wardId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Ward not found" });
+    }
+
+    // Check if ward is referenced by other tables (areas, etc.)
+    db.query("SELECT COUNT(*) as count FROM area_details WHERE WARD_ID = ?", [wardId], (err2, results2) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      
+      if (results2[0].count > 0) {
+        return res.status(400).json({ 
+          error: "Cannot delete ward. It is referenced by areas. Please remove or reassign areas first." 
+        });
+      }
+
+      // Proceed with deletion
+      db.query("DELETE FROM ward_details WHERE Ward_ID = ?", [wardId], (err3, result) => {
+        if (err3) return res.status(500).json({ error: err3.message });
+        
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ error: "Ward not found" });
+        }
+
+        res.json({ message: "Ward deleted successfully" });
+      });
+    });
+  });
+};
+

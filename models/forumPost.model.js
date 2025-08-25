@@ -18,14 +18,13 @@ const ForumPostSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, "Category is required"],
-    enum: ["General", "Technical", "Workplace", "Suggestion", "Complaint"],
+    enum: ["General", "Technical", "Workplace", "Suggestion", "Complaint", "technical-errors"],
     default: "General"
   },
   author: {
     id: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      refPath: 'author.model'
+      required: true
     },
     model: {
       type: String,
@@ -76,8 +75,7 @@ const ForumPostSchema = new mongoose.Schema({
     author: {
       id: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        refPath: 'replies.author.model'
+        required: true
       },
       model: {
         type: String,

@@ -61,6 +61,9 @@ exports.getPosts = async (req, res) => {
       .limit(limitNum)
       .select("-__v");
 
+    console.log("Debug - Found posts count:", posts.length);
+    console.log("Debug - First post author:", posts[0]?.author);
+
     // Get total count for pagination
     const total = await ForumPost.countDocuments(filter);
 
@@ -162,11 +165,13 @@ exports.createPost = async (req, res) => {
     console.log("Debug - Post author object:", post.author);
     console.log("Debug - Post author ID type:", typeof post.author.id);
 
-    await post.save();
+    const savedPost = await post.save();
+    console.log("Debug - Post saved successfully:", savedPost._id);
+    console.log("Debug - Saved post author:", savedPost.author);
 
     // Emit WebSocket event for new post
     if (global.forumSocket) {
-      global.forumSocket.emitNewPost(post);
+      global.forumSocket.emitNewPost(savedPost);
     }
 
     res.status(201).json({
