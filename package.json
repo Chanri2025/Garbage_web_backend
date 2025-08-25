@@ -15,9 +15,13 @@
   "dependencies": {
     "@faker-js/faker": "^9.8.0",
     "cloudinary": "^2.6.1",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "express-validator": "^7.2.1",
     "faker": "^6.6.6",
     "jimp": "^0.22.10",
     "jsonwebtoken": "^9.0.2",
@@ -27,6 +31,7 @@
     "mysql2": "^3.14.0",
     "nodemon": "^3.1.9",
     "qrcode": "^1.5.4",
-    "qrcode-reader": "^1.0.4"
+    "qrcode-reader": "^1.0.4",
+    "socket.io": "^4.8.1"
   }
 }
