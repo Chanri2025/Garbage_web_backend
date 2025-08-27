@@ -41,6 +41,9 @@ const forumRoutes = require("./routes/forumRoutes");
 // Import Approval routes
 const approvalRoutes = require("./routes/approvalRoutes");
 
+// Import Admin routes
+const adminRoutes = require("./routes/adminRoutes");
+
 // SQL API Endpoints
 app.use("/api/employees", employeeRoutes);
 app.use("/api/devices", deviceRoutes);
@@ -68,6 +71,9 @@ app.use("/api/forum", forumRoutes);
 
 // Approval Workflow API Endpoints
 app.use("/api/approvals", approvalRoutes);
+
+// Admin API Endpoints
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.json({
