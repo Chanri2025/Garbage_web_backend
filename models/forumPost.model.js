@@ -18,7 +18,7 @@ const ForumPostSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, "Category is required"],
-    enum: ["General", "Technical", "Workplace", "Suggestion", "Complaint", "technical-errors"],
+    enum: ["General", "Technical", "Workplace", "Suggestion", "Complaint", "technical-errors", "cleaning-garbage"],
     default: "General"
   },
   author: {

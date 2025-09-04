@@ -44,7 +44,7 @@ const validatePost = [
     .isLength({ min: 10, max: 5000 })
     .withMessage("Content must be between 10 and 5000 characters"),
   body("category")
-    .isIn(["General", "Technical", "Workplace", "Suggestion", "Complaint"])
+    .isIn(["General", "Technical", "Workplace", "Suggestion", "Complaint", "technical-errors", "cleaning-garbage"])
     .withMessage("Invalid category"),
   body("tags")
     .optional()
