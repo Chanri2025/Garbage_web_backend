@@ -15,16 +15,35 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(null, 'employee-upload-' + Date.now() + path.extname(file.originalname));
+    cb(null, 'bulk-upload-' + Date.now() + path.extname(file.originalname));
   }
 });
 
 // File filter for CSV files only
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+  console.log('File upload attempt:', {
+    originalname: file.originalname,
+    mimetype: file.mimetype,
+    fieldname: file.fieldname
+  });
+  
+  // Check multiple conditions for CSV files
+  const isCSV = 
+    file.mimetype === 'text/csv' || 
+    file.mimetype === 'application/csv' ||
+    file.mimetype === 'text/plain' ||
+    file.originalname.toLowerCase().endsWith('.csv') ||
+    file.originalname.toLowerCase().includes('.csv');
+  
+  if (isCSV) {
+    console.log('CSV file accepted:', file.originalname);
     cb(null, true);
   } else {
-    cb(new Error('Only CSV files are allowed'), false);
+    console.log('File rejected - not a CSV:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype
+    });
+    cb(new Error(`Only CSV files are allowed. Received: ${file.mimetype} for file: ${file.originalname}`), false);
   }
 };
 
