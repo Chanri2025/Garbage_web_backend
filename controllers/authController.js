@@ -17,15 +17,38 @@ const getUserModel = (role) => {
 };
 
 exports.login = async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, email, password, role } = req.body;
+  
+  // Validate required fields
+  if (!password || !role) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Password and role are required" 
+    });
+  }
+  
+  if (!username && !email) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Username or email is required" 
+    });
+  }
+  
   const UserModel = getUserModel(role);
-  console.log("Login attempt:", { username, password, role });
+  console.log("Login attempt:", { username, email, password, role });
   if (!UserModel) {
     console.log("Invalid role");
     return res.status(400).json({ success: false, message: "Invalid role" });
   }
   try {
-    const user = await UserModel.findOne({ username });
+    // Try to find user by username first, then by email
+    let user = null;
+    if (username) {
+      user = await UserModel.findOne({ username });
+    } else if (email) {
+      user = await UserModel.findOne({ email });
+    }
+    
     console.log("Found user:", user);
     if (!user) {
       console.log("User not found");
@@ -53,7 +76,7 @@ exports.login = async (req, res) => {
           return res.status(404).json({ success: false, message: "Employee details not found in SQL" });
         }
         const token = jwt.sign(
-          { id: user._id, username: user.username, role: user.role },
+          { id: user._id, username: user.username, role: user.role, email: user.email },
           process.env.JWT_SECRET || "yoursecretkey",
           { expiresIn: "1d" }
         );
@@ -82,7 +105,7 @@ exports.login = async (req, res) => {
     }
     
     const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user._id, username: user.username, role: user.role, email: user.email },
       process.env.JWT_SECRET || "yoursecretkey",
       { expiresIn: "1d" }
     );
@@ -101,16 +124,42 @@ exports.login = async (req, res) => {
 // Register Super-Admin (highest level)
 exports.registerSuperAdmin = async (req, res) => {
   const { username, password, name, email, phone } = req.body;
+  
+  // Validate required fields
+  if (!username || !password || !email) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Username, password, and email are required" 
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Please enter a valid email address" 
+    });
+  }
+
   try {
-    const existing = await Admin.findOne({ username });
-    if (existing) {
+    // Check if username already exists
+    const existingUsername = await Admin.findOne({ username });
+    if (existingUsername) {
       return res.status(400).json({ success: false, message: "Username already exists" });
     }
+
+    // Check if email already exists
+    const existingEmail = await Admin.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "Email already exists" });
+    }
+
     const superAdmin = new Admin({ 
       username, 
       password, 
       name: name || username,
-      email,
+      email: email.toLowerCase(),
       phone,
       role: "super-admin", 
       adminType: "super" 
@@ -119,23 +168,54 @@ exports.registerSuperAdmin = async (req, res) => {
     const { password: _, ...adminData } = superAdmin.toObject();
     res.status(201).json({ success: true, user: adminData });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('Super-admin registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 
 // Register Admin
 exports.registerAdmin = async (req, res) => {
   const { username, password, adminType, name, email, phone } = req.body;
+  
+  // Validate required fields
+  if (!username || !password || !email) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Username, password, and email are required" 
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Please enter a valid email address" 
+    });
+  }
+
   try {
-    const existing = await Admin.findOne({ username });
-    if (existing) {
+    // Check if username already exists
+    const existingUsername = await Admin.findOne({ username });
+    if (existingUsername) {
       return res.status(400).json({ success: false, message: "Username already exists" });
     }
+
+    // Check if email already exists
+    const existingEmail = await Admin.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "Email already exists" });
+    }
+
     const admin = new Admin({ 
       username, 
       password, 
       name: name || username,
-      email,
+      email: email.toLowerCase(),
       phone,
       adminType 
     });
@@ -143,25 +223,56 @@ exports.registerAdmin = async (req, res) => {
     const { password: _, ...adminData } = admin.toObject();
     res.status(201).json({ success: true, user: adminData });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('Admin registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 
 // Register Manager (needs admin approval)
 exports.registerManager = async (req, res) => {
   const { username, password, name, department, phone, email } = req.body;
+  
+  // Validate required fields
+  if (!username || !password || !name || !department || !email) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Username, password, name, department, and email are required" 
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Please enter a valid email address" 
+    });
+  }
+
   try {
-    const existing = await Manager.findOne({ username });
-    if (existing) {
+    // Check if username already exists
+    const existingUsername = await Manager.findOne({ username });
+    if (existingUsername) {
       return res.status(400).json({ success: false, message: "Username already exists" });
     }
+
+    // Check if email already exists
+    const existingEmail = await Manager.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "Email already exists" });
+    }
+
     const manager = new Manager({ 
       username, 
       password, 
       name,
       department,
       phone,
-      email,
+      email: email.toLowerCase(),
       isApproved: false // Needs admin approval
     });
     await manager.save();
@@ -172,28 +283,89 @@ exports.registerManager = async (req, res) => {
       message: "Manager registration submitted for approval"
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('Manager registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 
 exports.registerCitizen = async (req, res) => {
   const { username, password, name, address, phone, email } = req.body;
+  
+  // Validate required fields
+  if (!username || !password || !name || !email) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Username, password, name, and email are required" 
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Please enter a valid email address" 
+    });
+  }
+
   try {
-    const existing = await Citizen.findOne({ username });
-    if (existing) {
+    // Check if username already exists
+    const existingUsername = await Citizen.findOne({ username });
+    if (existingUsername) {
       return res.status(400).json({ success: false, message: "Username already exists" });
     }
-    const citizen = new Citizen({ username, password, name, address, phone, email });
+
+    // Check if email already exists
+    const existingEmail = await Citizen.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "Email already exists" });
+    }
+
+    const citizen = new Citizen({ 
+      username, 
+      password, 
+      name, 
+      address, 
+      phone, 
+      email: email.toLowerCase() 
+    });
     await citizen.save();
     const { password: _, ...citizenData } = citizen.toObject();
     res.status(201).json({ success: true, user: citizenData });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('Citizen registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 
 exports.registerEmployee = async (req, res) => {
   const { username, password, name, employeeId, department, phone, email } = req.body;
+  
+  // Validate required fields
+  if (!username || !password || !name || !employeeId || !email) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Username, password, name, employeeId, and email are required" 
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Please enter a valid email address" 
+    });
+  }
+
   try {
     // Check if employeeId exists in SQL
     const [rows] = await require("../config/db.sql").promise().query(
@@ -203,16 +375,38 @@ exports.registerEmployee = async (req, res) => {
     if (!rows.length) {
       return res.status(400).json({ success: false, message: "employeeId does not exist in SQL" });
     }
-    const existing = await Employee.findOne({ username });
-    if (existing) {
+
+    // Check if username already exists
+    const existingUsername = await Employee.findOne({ username });
+    if (existingUsername) {
       return res.status(400).json({ success: false, message: "Username already exists" });
     }
-    const employee = new Employee({ username, password, name, employeeId, department, phone, email });
+
+    // Check if email already exists
+    const existingEmail = await Employee.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "Email already exists" });
+    }
+
+    const employee = new Employee({ 
+      username, 
+      password, 
+      name, 
+      employeeId, 
+      department, 
+      phone, 
+      email: email.toLowerCase() 
+    });
     await employee.save();
     const { password: _, ...employeeData } = employee.toObject();
     res.status(201).json({ success: true, user: employeeData });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('Employee registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 

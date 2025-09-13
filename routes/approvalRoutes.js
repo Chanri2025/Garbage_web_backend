@@ -53,6 +53,11 @@ router.post('/reject/:request_id', requireAdmin, approvalController.rejectReques
 // Get approval statistics
 router.get('/stats', requireAdmin, approvalController.getApprovalStats);
 
+// === GENERAL APPROVAL REQUEST ENDPOINT ===
+
+// General approval request endpoint (for any entity type)
+router.post('/request', approvalController.createGeneralApprovalRequest);
+
 // === MANAGER TRACKING ENDPOINT ===
 
 // Get manager's own requests
