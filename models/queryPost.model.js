@@ -52,7 +52,7 @@ const QueryPostSchema = new mongoose.Schema({
       "Service Request", "service request",
       "Complaint", "complaint",
       "Suggestion", "suggestion",
-      "General Inquiry", "general inquiry",
+      "General Inquiry", "general inquiry", "general",
       "Emergency", "emergency",
       "Other", "other"
     ]
@@ -66,6 +66,40 @@ const QueryPostSchema = new mongoose.Schema({
     type: String,
     enum: ["Low", "Medium", "High", "Urgent", "low", "medium", "high", "urgent"],
     default: "Medium"
+  },
+  location: {
+    address: {
+      type: String,
+      trim: true,
+      maxlength: [200, "Address cannot exceed 200 characters"]
+    },
+    coordinates: {
+      latitude: {
+        type: Number,
+        min: -90,
+        max: 90
+      },
+      longitude: {
+        type: Number,
+        min: -180,
+        max: 180
+      }
+    },
+    area: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Area name cannot exceed 100 characters"]
+    },
+    ward: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Ward name cannot exceed 100 characters"]
+    },
+    zone: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Zone name cannot exceed 100 characters"]
+    }
   },
   author: {
     id: {
@@ -251,6 +285,8 @@ QueryPostSchema.index({ 'assignedTo.id': 1, status: 1 });
 QueryPostSchema.index({ description: 'text' });
 QueryPostSchema.index({ createdAt: -1 });
 QueryPostSchema.index({ isPinned: -1, createdAt: -1 });
+QueryPostSchema.index({ 'location.area': 1, 'location.ward': 1, 'location.zone': 1 });
+QueryPostSchema.index({ 'location.coordinates.latitude': 1, 'location.coordinates.longitude': 1 });
 
 // Pre-save middleware to handle field mapping and update tags
 QueryPostSchema.pre('save', function(next) {
@@ -274,6 +310,7 @@ QueryPostSchema.pre('save', function(next) {
       'service request': 'Service Request',
       'suggestion': 'Suggestion',
       'general inquiry': 'General Inquiry',
+      'general': 'General Inquiry',
       'emergency': 'Emergency',
       'other': 'Other'
     };
