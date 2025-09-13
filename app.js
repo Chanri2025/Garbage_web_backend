@@ -38,6 +38,9 @@ const authRoutes = require("./routes/authRoutes");
 // Import Forum routes
 const forumRoutes = require("./routes/forumRoutes");
 
+// Import Query routes
+const queryRoutes = require("./routes/queryRoutes");
+
 // Import Approval routes
 const approvalRoutes = require("./routes/approvalRoutes");
 
@@ -69,6 +72,9 @@ app.use("/api/carbonFootprintDetails", carbonFootprintDetailsRoutes);
 // Forum API Endpoints
 app.use("/api/forum", forumRoutes);
 
+// Query API Endpoints
+app.use("/api/queries", queryRoutes);
+
 // Approval Workflow API Endpoints
 app.use("/api/approvals", approvalRoutes);
 
@@ -87,7 +93,8 @@ app.get("/", (req, res) => {
     endpoints: {
       auth: "/api/auth",
       approvals: "/api/approvals",
-      forum: "/api/forum"
+      forum: "/api/forum",
+      queries: "/api/queries"
     }
   });
 });
