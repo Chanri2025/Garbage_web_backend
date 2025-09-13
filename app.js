@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const http = require("http");
+const { activityLogger } = require("./middleware/activityLogger");
 dotenv.config();
 
 // Connect to SQL and MongoDB
@@ -14,6 +15,12 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
+
+// Activity logging middleware (MUST be before routes to capture all API calls)
+app.use('/api', activityLogger({
+  skipPaths: ['/uploads'], // Only skip uploads, log everything else including login/register
+  includeResponseData: true // Set to true if you want to log response data
+}));
 
 // Import SQL routes
 const employeeRoutes = require("./routes/employeeRoutes");
@@ -35,8 +42,6 @@ const carbonFootprintDetailsRoutes = require("./routes/carbonFootprintDetails.ro
 const areaWiseGarbageCollectionRoutes = require("./routes/areaWiseGarbageCollection.route");
 const authRoutes = require("./routes/authRoutes");
 
-// Import Forum routes
-const forumRoutes = require("./routes/forumRoutes");
 
 // Import Query routes
 const queryRoutes = require("./routes/queryRoutes");
@@ -69,8 +74,6 @@ app.use("/api/attendanceLogs", dailyAttendanceLogRoutes);
 app.use("/api/houses", houseRoutes);
 app.use("/api/carbonFootprintDetails", carbonFootprintDetailsRoutes);
 
-// Forum API Endpoints
-app.use("/api/forum", forumRoutes);
 
 // Query API Endpoints
 app.use("/api/queries", queryRoutes);
@@ -81,6 +84,10 @@ app.use("/api/approvals", approvalRoutes);
 // Admin API Endpoints
 app.use("/api/admin", adminRoutes);
 
+// Activity Log API Endpoints
+const activityLogRoutes = require("./routes/activityLogRoutes");
+app.use("/api/activity-logs", activityLogRoutes);
+
 app.get("/", (req, res) => {
   res.json({
     message: "SWM API with Role Hierarchy is running",
@@ -88,23 +95,27 @@ app.get("/", (req, res) => {
     features: {
       roleHierarchy: ["super-admin", "admin", "manager", "employee", "citizen"],
       approvalWorkflow: true,
-      userManagement: true
+      userManagement: true,
+      activityLogging: true
     },
     endpoints: {
       auth: "/api/auth",
       approvals: "/api/approvals",
-      forum: "/api/forum",
-      queries: "/api/queries"
+      queries: "/api/queries",
+      activityLogs: "/api/activity-logs"
     }
   });
 });
 
-// Initialize WebSocket server
-const ForumSocket = require("./websocket/forumSocket");
-const forumSocket = new ForumSocket(server);
+// Test endpoint for activity logging
+app.get("/api/test", (req, res) => {
+  res.json({
+    message: "Test endpoint for activity logging",
+    timestamp: new Date().toISOString(),
+    user: req.user || "Anonymous"
+  });
+});
 
-// Make forumSocket available globally for controllers
-global.forumSocket = forumSocket;
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

@@ -484,6 +484,78 @@ exports.deleteWardApprovalRequest = async (req, res) => {
   await createApprovalRequest(req, res, 'ward', 'DELETE', req.params.id);
 };
 
+// ========== GENERAL APPROVAL REQUEST ==========
+
+// Create a general approval request (for any entity type)
+exports.createGeneralApprovalRequest = async (req, res) => {
+  try {
+    const { entityType, operation, targetId, data, reason } = req.body;
+    
+    // Validate required fields
+    if (!entityType || !operation) {
+      return res.status(400).json({
+        success: false,
+        message: 'Entity type and operation are required'
+      });
+    }
+    
+    // Check if user is manager or higher
+    if (!req.user || !['manager', 'admin', 'super-admin'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only managers and above can create approval requests'
+      });
+    }
+
+    // If user is admin or super-admin, execute directly for CREATE operations
+    if (['admin', 'super-admin'].includes(req.user.role) && operation === 'CREATE') {
+      return res.status(200).json({
+        success: true,
+        message: 'Operation executed directly (admin privilege)',
+        directExecution: true
+      });
+    }
+
+    // For managers, create approval request
+    const pendingChange = new PendingChange({
+      operation: operation.toUpperCase(),
+      targetModel: getModelName(entityType),
+      targetId: targetId,
+      databaseType: getDatabaseType(entityType),
+      proposedChanges: data || req.body,
+      requestedBy: req.user.id,
+      requestedByName: req.user.name || req.user.username,
+      priority: getPriority(operation, entityType, data || req.body),
+      category: getCategory(entityType),
+      description: `${operation.toUpperCase()} operation on ${entityType}${targetId ? ` (ID: ${targetId})` : ''}`,
+      reason: reason || ''
+    });
+
+    await pendingChange.save();
+
+    res.status(202).json({
+      success: true,
+      message: `${entityType} ${operation.toLowerCase()} request submitted for approval`,
+      request_id: pendingChange._id,
+      status: 'pending_approval',
+      details: {
+        operation: operation.toUpperCase(),
+        entityType: entityType,
+        estimatedApprovalTime: '24-48 hours',
+        priority: pendingChange.priority
+      }
+    });
+
+  } catch (error) {
+    console.error('Create general approval request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating approval request',
+      error: error.message
+    });
+  }
+};
+
 // ========== ADMIN APPROVAL MANAGEMENT ==========
 
 // Approve a request (updated to match frontend API expectations)

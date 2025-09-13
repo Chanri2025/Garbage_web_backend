@@ -6,7 +6,12 @@ const ManagerSchema = new mongoose.Schema({
   name: { type: String, required: true },
   department: { type: String, required: true },
   phone: { type: String },
-  email: { type: String },
+  email: { 
+    type: String, 
+    required: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
   role: { type: String, default: "manager" },
   adminType: { type: String }, // Similar to admin model for consistency
   isApproved: { type: Boolean, default: false }, // Managers need approval

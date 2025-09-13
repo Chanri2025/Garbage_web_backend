@@ -40,7 +40,8 @@ const auth = async (req, res, next) => {
       id: user._id,
       username: user.username,
       role: user.role,
-      name: user.name || user.username
+      name: user.name || user.username,
+      email: user.email
     };
     
     next();
