@@ -119,18 +119,25 @@ PendingChangeSchema.methods.executeOperation = async function() {
   const sql = require("../config/db.sql");
   
   try {
+    console.log(`Executing ${this.operation} operation on ${this.targetModel} (${this.databaseType})`);
+    console.log('Target ID:', this.targetId);
+    console.log('Proposed changes:', this.proposedChanges);
+    
     if (this.databaseType === 'MongoDB') {
       // Handle MongoDB operations
       const ModelClass = mongoose.model(this.targetModel);
       
       switch (this.operation) {
         case 'CREATE':
+          console.log('Creating new document in MongoDB');
           await ModelClass.create(this.proposedChanges);
           break;
         case 'UPDATE':
+          console.log('Updating document in MongoDB with ID:', this.targetId);
           await ModelClass.findByIdAndUpdate(this.targetId, this.proposedChanges);
           break;
         case 'DELETE':
+          console.log('Deleting document in MongoDB with ID:', this.targetId);
           await ModelClass.findByIdAndDelete(this.targetId);
           break;
       }
@@ -138,35 +145,245 @@ PendingChangeSchema.methods.executeOperation = async function() {
       // Handle MySQL operations
       const tableName = this.targetModel;
       
+      // Get the correct primary key column name for the table
+      const getPrimaryKeyColumn = (tableName) => {
+        const primaryKeyMap = {
+          'swm.employee_table': 'Emp_ID',
+          'employee_table': 'Emp_ID',
+          'swm.vehicle_table': 'Vehicle_ID',
+          'vehicle_table': 'Vehicle_ID',
+          'vehicle_details': 'Vehicle_ID',
+          'swm.area_details': 'Area_ID',
+          'area_details': 'Area_ID',
+          'swm.zone_table': 'Zone_ID',
+          'zone_table': 'Zone_ID',
+          'zone_details': 'Zone_ID',
+          'swm.ward_table': 'Ward_ID',
+          'ward_table': 'Ward_ID',
+          'ward_details': 'Ward_ID',
+          'swm.dump_yard_table': 'DY_ID',
+          'dump_yard_table': 'DY_ID',
+          'dump_yard_details': 'DY_ID',
+          'swm.device_table': 'Device_ID',
+          'device_table': 'Device_ID',
+          'device_details': 'Device_ID',
+          'swm.dust_bin_table': 'Dust_Bin_ID',
+          'dust_bin_table': 'Dust_Bin_ID',
+          'dust_bin_details': 'Dust_Bin_ID',
+          'swm.ip_log_table': 'Log_ID', // MongoDB collection
+          'ip_log_table': 'Log_ID' // MongoDB collection
+        };
+        return primaryKeyMap[tableName] || 'id';
+      };
+      
+      // Map model names to actual table names
+      const getActualTableName = (modelName) => {
+        const tableNameMap = {
+          'swm.employee_table': 'employee_table',
+          'employee_table': 'employee_table',
+          'swm.vehicle_table': 'vehicle_details',
+          'vehicle_table': 'vehicle_details',
+          'vehicle_details': 'vehicle_details',
+          'swm.area_details': 'area_details',
+          'area_details': 'area_details',
+          'swm.zone_table': 'zone_details',
+          'zone_table': 'zone_details',
+          'zone_details': 'zone_details',
+          'swm.ward_table': 'ward_details',
+          'ward_table': 'ward_details',
+          'ward_details': 'ward_details',
+          'swm.dump_yard_table': 'dump_yard_details',
+          'dump_yard_table': 'dump_yard_details',
+          'dump_yard_details': 'dump_yard_details',
+          'swm.device_table': 'device_details',
+          'device_table': 'device_details',
+          'device_details': 'device_details',
+          'swm.dust_bin_table': 'dust_bin_details',
+          'dust_bin_table': 'dust_bin_details',
+          'dust_bin_details': 'dust_bin_details',
+          'swm.ip_log_table': 'iplogs', // This is MongoDB collection
+          'ip_log_table': 'iplogs' // This is MongoDB collection
+        };
+        return tableNameMap[modelName] || modelName.replace('swm.', '');
+      };
+      
+      const actualTableName = getActualTableName(tableName);
+      const primaryKeyColumn = getPrimaryKeyColumn(tableName);
+      
+      // Filter out metadata fields that shouldn't be in database updates
+      const filterMetadataFields = (data) => {
+        const metadataFields = [
+          'operation',
+          'entityType', 
+          'entityId',
+          'currentData',
+          'proposedChanges',
+          'reason',
+          'requestedBy',
+          'requestedAt',
+          'status',
+          'priority',
+          'category'
+        ];
+        
+        const filtered = {};
+        for (const [key, value] of Object.entries(data)) {
+          if (!metadataFields.includes(key)) {
+            filtered[key] = value;
+          }
+        }
+        
+        return filtered;
+      };
+
+      // Map field names to match database column names
+      const mapFieldNames = (data) => {
+        const fieldMapping = {
+          'emp_id': 'Emp_ID',
+          'full_name': 'Full_Name',
+          'mobile_no': 'Mobile_No',
+          'user_address': 'User_Address',
+          'blood_group': 'Blood_Group',
+          'employment_type': 'Employment_Type',
+          'assigned_target': 'Assigned_Target',
+          'designation': 'Designation',
+          'father_name': 'Father_Name',
+          'mother_name': 'Mother_Name',
+          'joined_date': 'Joined_Date',
+          'qr_id': 'QR_ID',
+          'assigned_vehicle_id': 'Assigned_Vehicle_ID'
+        };
+        
+        const mapped = {};
+        for (const [key, value] of Object.entries(data)) {
+          const dbFieldName = fieldMapping[key] || key;
+          mapped[dbFieldName] = value;
+        }
+        
+        return mapped;
+      };
+
+      // Convert date fields to proper MySQL format
+      const convertDateFields = (data) => {
+        const converted = { ...data };
+        
+        // Convert Created_Date from MM/DD/YYYY to YYYY-MM-DD
+        if (converted.Created_Date) {
+          try {
+            const date = new Date(converted.Created_Date);
+            if (!isNaN(date.getTime())) {
+              converted.Created_Date = date.toISOString().split('T')[0]; // YYYY-MM-DD
+            } else {
+              delete converted.Created_Date; // Skip if conversion fails
+            }
+          } catch (error) {
+            delete converted.Created_Date; // Skip if conversion fails
+          }
+        }
+        
+        // Convert Update_Date from MM/DD/YYYY to YYYY-MM-DD
+        if (converted.Update_Date) {
+          try {
+            const date = new Date(converted.Update_Date);
+            if (!isNaN(date.getTime())) {
+              converted.Update_Date = date.toISOString().split('T')[0]; // YYYY-MM-DD
+            } else {
+              delete converted.Update_Date; // Skip if conversion fails
+            }
+          } catch (error) {
+            delete converted.Update_Date; // Skip if conversion fails
+          }
+        }
+        
+        // Convert Joined_Date and skip invalid dates
+        if (converted.Joined_Date) {
+          try {
+            // Skip invalid dates like '0000-00-00 00:00:00'
+            if (converted.Joined_Date === '0000-00-00 00:00:00' || 
+                converted.Joined_Date === '0000-00-00' ||
+                converted.Joined_Date === '') {
+              delete converted.Joined_Date;
+            } else {
+              const date = new Date(converted.Joined_Date);
+              if (!isNaN(date.getTime())) {
+                converted.Joined_Date = date.toISOString().split('T')[0]; // YYYY-MM-DD
+              } else {
+                delete converted.Joined_Date; // Skip if conversion fails
+              }
+            }
+          } catch (error) {
+            delete converted.Joined_Date; // Skip if conversion fails
+          }
+        }
+        
+        return converted;
+      };
+      
+      console.log('MySQL operation details:', {
+        tableName: actualTableName,
+        primaryKeyColumn: primaryKeyColumn,
+        operation: this.operation
+      });
+      
       switch (this.operation) {
         case 'CREATE':
-          const createFields = Object.keys(this.proposedChanges).join(', ');
-          const createValues = Object.values(this.proposedChanges);
+          // Use the nested proposedChanges object that contains the actual data
+          const createData = this.proposedChanges.proposedChanges || this.proposedChanges;
+          console.log('Raw create data:', createData);
+          
+          // Check if there are any valid fields to create
+          if (Object.keys(createData).length === 0) {
+            console.log('No valid fields to create');
+            break; // Skip the create if no valid fields remain
+          }
+          
+          const mappedCreateData = mapFieldNames(createData);
+          const convertedCreateData = convertDateFields(mappedCreateData);
+          const createFields = Object.keys(convertedCreateData).join(', ');
+          const createValues = Object.values(convertedCreateData);
           const createPlaceholders = createValues.map(() => '?').join(', ');
           
-          await sql.promise().query(
-            `INSERT INTO ${tableName} (${createFields}) VALUES (${createPlaceholders})`,
-            createValues
-          );
+          const createQuery = `INSERT INTO ${actualTableName} (${createFields}) VALUES (${createPlaceholders})`;
+          console.log('CREATE query:', createQuery);
+          console.log('CREATE values:', createValues);
+          
+          await sql.promise().query(createQuery, createValues);
           break;
           
         case 'UPDATE':
-          const updateFields = Object.keys(this.proposedChanges)
+          // Use the nested proposedChanges object that contains the actual data
+          const updateData = this.proposedChanges.proposedChanges || this.proposedChanges;
+          console.log('Raw update data:', updateData);
+          
+          // Check if there are any valid fields to update
+          if (Object.keys(updateData).length === 0) {
+            console.log('No valid fields to update');
+            break; // Skip the update if no valid fields remain
+          }
+          
+          const mappedUpdateData = mapFieldNames(updateData);
+          const convertedUpdateData = convertDateFields(mappedUpdateData);
+          const updateFields = Object.keys(convertedUpdateData)
             .map(field => `${field} = ?`)
             .join(', ');
-          const updateValues = [...Object.values(this.proposedChanges), this.targetId];
+          // Use entityId from proposedChanges if targetId is undefined
+          const targetId = this.targetId || this.proposedChanges.entityId;
+          console.log('Using target ID:', targetId);
+          const updateValues = [...Object.values(convertedUpdateData), targetId];
           
-          await sql.promise().query(
-            `UPDATE ${tableName} SET ${updateFields} WHERE id = ?`,
-            updateValues
-          );
+          const updateQuery = `UPDATE ${actualTableName} SET ${updateFields} WHERE ${primaryKeyColumn} = ?`;
+          console.log('UPDATE query:', updateQuery);
+          console.log('UPDATE values:', updateValues);
+          
+          await sql.promise().query(updateQuery, updateValues);
           break;
           
         case 'DELETE':
-          await sql.promise().query(
-            `DELETE FROM ${tableName} WHERE id = ?`,
-            [this.targetId]
-          );
+          const deleteQuery = `DELETE FROM ${actualTableName} WHERE ${primaryKeyColumn} = ?`;
+          console.log('DELETE query:', deleteQuery);
+          console.log('DELETE values:', [this.targetId]);
+          
+          await sql.promise().query(deleteQuery, [this.targetId]);
           break;
       }
     }

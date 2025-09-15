@@ -93,7 +93,7 @@ exports.updateVehicle = (req, res) => {
   } = req.body;
 
   const updateVehicleQuery = `
-    UPDATE Vehicle_Details SET
+    UPDATE vehicle_details SET
       Vehicle_No = ?,
       Vehicle_Type = ?,
       Assigned_Emp_ID = ?,
@@ -158,7 +158,7 @@ exports.updateVehicle = (req, res) => {
 exports.deleteVehicle = (req, res) => {
   const id = req.params.id;
   db.query(
-    "DELETE FROM Vehicle_Details WHERE Vehicle_ID = ?",
+    "DELETE FROM vehicle_details WHERE Vehicle_ID = ?",
     [id],
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -175,7 +175,7 @@ exports.getVehicleByEmployeeId = (req, res) => {
   const { employeeId } = req.params;
 
   db.query(
-    "SELECT * FROM Vehicle_Details WHERE Assigned_Emp_ID = ?",
+    "SELECT * FROM vehicle_details WHERE Assigned_Emp_ID = ?",
     [employeeId],
     (err, results) => {
       if (err) return res.status(500).json({ error: err.message });
