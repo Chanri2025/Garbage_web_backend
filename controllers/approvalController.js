@@ -72,6 +72,7 @@ const getModelName = (entityType) => {
   const modelMap = {
     'house': 'HouseDetails',
     'employee': 'swm.employee_table',
+     // Handle capitalized entity type
     'vehicle': 'swm.vehicle_table', 
     'area': 'swm.area_details',
     'zone': 'swm.zone_table',
@@ -118,8 +119,11 @@ const getCategory = (entityType) => {
 // Get all pending changes for admin review (updated to match frontend API expectations)
 exports.getPendingChanges = async (req, res) => {
   try {
+    console.log('getPendingChanges called by user:', req.user?.role, req.user?.username);
+    
     // Only admins can view pending changes
     if (!['admin', 'super-admin'].includes(req.user.role)) {
+      console.log('Access denied - user role:', req.user?.role);
       return res.status(403).json({
         success: false,
         message: 'Only admins can view pending changes'
@@ -127,36 +131,59 @@ exports.getPendingChanges = async (req, res) => {
     }
     
     const { category, priority, page = 1, limit = 20 } = req.query;
+    console.log('Query params:', { category, priority, page, limit });
     
     // Build query
     const query = { status: 'pending' };
     if (category) query.category = category;
     if (priority) query.priority = priority;
     
+    console.log('MongoDB query:', query);
+    
     // Execute query with pagination
     const skip = (page - 1) * limit;
+    
+    console.log('Executing MongoDB query...');
     const pendingChanges = await PendingChange.find(query)
       .populate('requestedBy', 'name username department')
       .sort({ priority: -1, createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
     
+    console.log('Found pending changes:', pendingChanges.length);
+    console.log('Raw pending changes:', JSON.stringify(pendingChanges, null, 2));
+    
     const totalCount = await PendingChange.countDocuments(query);
+    console.log('Total count:', totalCount);
     
     // Transform data to match frontend expectations
-    const transformedChanges = pendingChanges.map(change => ({
-      id: change._id,
-      entityType: change.targetModel.toLowerCase().replace('swm.', '').replace('_table', '').replace('_details', '').replace('details', ''),
-      operation: change.operation.toLowerCase(),
-      entityId: change.targetId,
-      proposedChanges: change.proposedChanges,
-      currentData: change.originalData,
-      requestedBy: change.requestedByName,
-      requestedAt: change.createdAt,
-      reason: change.description || change.reason
-    }));
+    const transformedChanges = pendingChanges.map(change => {
+      console.log('Transforming change:', change._id, change.targetModel, change.operation);
+      console.log('Proposed changes:', change.proposedChanges);
+      console.log('Original data:', change.originalData);
+      
+      const transformed = {
+        id: change._id,
+        entityType: change.targetModel.toLowerCase().replace('swm.', '').replace('_table', '').replace('_details', '').replace('details', ''),
+        operation: change.operation.toLowerCase(),
+        entityId: change.targetId,
+        proposedChanges: change.proposedChanges || {},
+        currentData: change.originalData || {},
+        requestedBy: change.requestedByName,
+        requestedAt: change.createdAt,
+        reason: change.description || change.reason || '',
+        status: change.status,
+        priority: change.priority,
+        category: change.category
+      };
+      
+      console.log('Transformed change:', transformed);
+      return transformed;
+    });
     
-    res.json({
+    console.log('Transformed changes:', transformedChanges.length);
+    
+    const response = {
       success: true,
       changes: transformedChanges,
       pagination: {
@@ -165,7 +192,10 @@ exports.getPendingChanges = async (req, res) => {
         totalItems: totalCount,
         itemsPerPage: parseInt(limit)
       }
-    });
+    };
+    
+    console.log('Sending response:', response);
+    res.json(response);
     
   } catch (error) {
     console.error('Get pending changes error:', error);
@@ -456,6 +486,14 @@ exports.createDumpyardApprovalRequest = async (req, res) => {
   await createApprovalRequest(req, res, 'dumpyard', 'CREATE');
 };
 
+exports.updateDumpyardApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'dumpyard', 'UPDATE', req.params.id);
+};
+
+exports.deleteDumpyardApprovalRequest = async (req, res) => {
+  await createApprovalRequest(req, res, 'dumpyard', 'DELETE', req.params.id);
+};
+
 // ========== ZONE APPROVAL ENDPOINTS ==========
 
 exports.createZoneApprovalRequest = async (req, res) => {
@@ -564,8 +602,11 @@ exports.approveRequest = async (req, res) => {
     const { request_id } = req.params;
     const { admin_response } = req.body;
     
+    console.log('approveRequest called for ID:', request_id, 'by user:', req.user?.role);
+    
     // Only admins can approve
     if (!['admin', 'super-admin'].includes(req.user.role)) {
+      console.log('Access denied - user role:', req.user?.role);
       return res.status(403).json({
         success: false,
         message: 'Only admins can approve requests'
@@ -574,20 +615,32 @@ exports.approveRequest = async (req, res) => {
     
     const pendingChange = await PendingChange.findById(request_id);
     if (!pendingChange) {
+      console.log('Pending change not found for ID:', request_id);
       return res.status(404).json({
         success: false,
         message: 'Request not found'
       });
     }
     
+    console.log('Found pending change:', {
+      id: pendingChange._id,
+      operation: pendingChange.operation,
+      targetModel: pendingChange.targetModel,
+      targetId: pendingChange.targetId,
+      status: pendingChange.status
+    });
+    
     if (!pendingChange.canBeReviewed()) {
+      console.log('Change cannot be reviewed - status:', pendingChange.status, 'expiresAt:', pendingChange.expiresAt);
       return res.status(400).json({
         success: false,
         message: 'This request cannot be reviewed (already processed or expired)'
       });
     }
     
+    console.log('Executing approval for change:', pendingChange._id);
     await pendingChange.approve(req.user, admin_response);
+    console.log('Approval completed successfully for change:', pendingChange._id);
     
     res.json({
       success: true,

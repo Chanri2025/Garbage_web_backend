@@ -40,6 +40,8 @@ router.delete('/ward/delete/:id', requireManagerOrHigher, approvalController.del
 
 // Dumpyard approval requests
 router.post('/dumpyard/create', requireManagerOrHigher, approvalController.createDumpyardApprovalRequest);
+router.put('/dumpyard/update/:id', requireManagerOrHigher, approvalController.updateDumpyardApprovalRequest);
+router.delete('/dumpyard/delete/:id', requireManagerOrHigher, approvalController.deleteDumpyardApprovalRequest);
 
 // === ADMIN MANAGEMENT ENDPOINTS ===
 
