@@ -16,6 +16,7 @@ router.post('/:id/respond', queryController.addResponse);
 router.post('/:id/assign', queryController.assignQuery);
 router.put('/:id/status', queryController.updateStatus);
 router.put('/:id/priority', queryController.updatePriority);
+router.delete('/:id', queryController.deleteQuery);
 router.get('/user/:userId', queryController.getUserQueries);
 router.get('/assigned/:userId', queryController.getAssignedQueries);
 router.put('/:id/pin', queryController.togglePin);

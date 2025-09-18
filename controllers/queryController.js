@@ -580,3 +580,43 @@ exports.getQueryStats = async (req, res) => {
     });
   }
 };
+
+// Delete query
+exports.deleteQuery = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const query = await QueryPost.findById(id);
+    if (!query) {
+      return res.status(404).json({
+        success: false,
+        message: 'Query not found'
+      });
+    }
+
+    // Only the author or an admin/super-admin can delete
+    const isAdmin = ['admin', 'super-admin'].includes(req.user?.role);
+    const isAuthor = String(query.author?.id) === String(req.user?.id);
+    if (!isAdmin && !isAuthor) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to delete this query'
+      });
+    }
+
+    await QueryPost.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Query deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting query:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete query',
+      error: error.message
+    });
+  }
+};
