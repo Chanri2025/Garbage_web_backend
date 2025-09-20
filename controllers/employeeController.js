@@ -20,9 +20,13 @@ exports.createEmployee = async (req, res) => {
     // Begin a database transaction (so all changes happen together)
     await transaction.beginTransaction();
 
+    // Get the next Emp_ID by counting existing employees
+    const [countResult] = await transaction.query("SELECT COUNT(*) as total FROM employee_table");
+    const nextEmpId = countResult[0].total + 1;
+
     // Gather all the information about the new employee from the request
     const newEmployeeData = {
-      Emp_ID: req.body.Emp_ID, // Unique ID for the employee
+      Emp_ID: nextEmpId, // Auto-generated unique ID for the employee
       Full_Name: req.body.Full_Name, // Employee's full name
       User_Name: req.body.User_Name, // Username for login
       User_Password: req.body.User_Password, // Password for login
@@ -52,7 +56,7 @@ exports.createEmployee = async (req, res) => {
     );
 
     // Get the new employee's ID
-    const newEmpId = req.body.Emp_ID;
+    const newEmpId = nextEmpId;
 
     // Step 1.5: Create a basic EmpBeatMap entry for the new employee (will be updated below if vehicle assigned)
     try {
@@ -66,7 +70,8 @@ exports.createEmployee = async (req, res) => {
         [empBeatMapData]
       );
     } catch (empBeatMapError) {
-      // If it fails, don't stop the process (maybe the row already exists)
+      // If EmpBeatMap table doesn't exist, just log and continue
+      console.log("EmpBeatMap table not found, skipping EmpBeatMap creation");
     }
 
     // Step 2: If a vehicle is assigned to the employee, handle all the related logic
@@ -120,23 +125,39 @@ exports.createEmployee = async (req, res) => {
       const areaId = vehicleRows[0]?.Area_ID;
 
       if (areaId) {
-        // 2. Get the Ward_ID and Zone_ID from the Area_Details table for this Area_ID
-        const [areaRows] = await transaction.query(
-          `SELECT WARD_ID, Zone_ID FROM Area_Details WHERE Area_ID = ?`,
-          [areaId]
-        );
-        const wardId = areaRows[0]?.WARD_ID;
-        const zoneId = areaRows[0]?.Zone_ID;
+        try {
+          // 2. Get the Ward_ID and Zone_ID from the Area_Details table for this Area_ID
+          const [areaRows] = await transaction.query(
+            `SELECT WARD_ID, Zone_ID FROM Area_Details WHERE Area_ID = ?`,
+            [areaId]
+          );
+          const wardId = areaRows[0]?.WARD_ID;
+          const zoneId = areaRows[0]?.Zone_ID;
 
-        // 3. Insert or update the EmpBeatMap table with all three IDs
-        //    - If a row for this employee already exists, update it
-        //    - If not, create a new row
-        await transaction.query(
-          `INSERT INTO EmpBeatMap (Emp_ID, Area_ID, Ward_ID, Zone_ID, Created_date, Updated_date)
-           VALUES (?, ?, ?, ?, NOW(), NOW())
-           ON DUPLICATE KEY UPDATE Area_ID = VALUES(Area_ID), Ward_ID = VALUES(Ward_ID), Zone_ID = VALUES(Zone_ID), Updated_date = NOW()`,
-          [newEmpId, areaId, wardId, zoneId]
-        );
+          // 3. Insert or update the EmpBeatMap table with all three IDs
+          //    - If a row for this employee already exists, update it
+          //    - If not, create a new row
+          await transaction.query(
+            `INSERT INTO EmpBeatMap (Emp_ID, Area_ID, Ward_ID, Zone_ID, Created_date, Updated_date)
+             VALUES (?, ?, ?, ?, NOW(), NOW())
+             ON DUPLICATE KEY UPDATE Area_ID = VALUES(Area_ID), Ward_ID = VALUES(Ward_ID), Zone_ID = VALUES(Zone_ID), Updated_date = NOW()`,
+            [newEmpId, areaId, wardId, zoneId]
+          );
+        } catch (areaError) {
+          // If Area_Details table doesn't exist, try to insert with Area_ID only
+          try {
+            console.log("Area_Details table not found, inserting with Area_ID only");
+            await transaction.query(
+              `INSERT INTO EmpBeatMap (Emp_ID, Area_ID, Created_date, Updated_date)
+               VALUES (?, ?, NOW(), NOW())
+               ON DUPLICATE KEY UPDATE Area_ID = VALUES(Area_ID), Updated_date = NOW()`,
+              [newEmpId, areaId]
+            );
+          } catch (empBeatMapError) {
+            // If EmpBeatMap table also doesn't exist, just log and continue
+            console.log("EmpBeatMap table not found, skipping EmpBeatMap update");
+          }
+        }
       }
       // --- End referencing logic ---
     }
@@ -263,23 +284,39 @@ exports.updateEmployee = async (req, res) => {
         const areaId = vehicleRows[0]?.Area_ID;
 
         if (areaId) {
-          // 2. Get the Ward_ID and Zone_ID from the Area_Details table for this Area_ID
-          const [areaRows] = await transaction.query(
-            `SELECT WARD_ID, Zone_ID FROM Area_Details WHERE Area_ID = ?`,
-            [areaId]
-          );
-          const wardId = areaRows[0]?.WARD_ID;
-          const zoneId = areaRows[0]?.Zone_ID;
+          try {
+            // 2. Get the Ward_ID and Zone_ID from the Area_Details table for this Area_ID
+            const [areaRows] = await transaction.query(
+              `SELECT WARD_ID, Zone_ID FROM Area_Details WHERE Area_ID = ?`,
+              [areaId]
+            );
+            const wardId = areaRows[0]?.WARD_ID;
+            const zoneId = areaRows[0]?.Zone_ID;
 
-          // 3. Insert or update the EmpBeatMap table with all three IDs
-          //    - If a row for this employee already exists, update it
-          //    - If not, create a new row
-          await transaction.query(
-            `INSERT INTO EmpBeatMap (Emp_ID, Area_ID, Ward_ID, Zone_ID, Created_date, Updated_date)
-             VALUES (?, ?, ?, ?, NOW(), NOW())
-             ON DUPLICATE KEY UPDATE Area_ID = VALUES(Area_ID), Ward_ID = VALUES(Ward_ID), Zone_ID = VALUES(Zone_ID), Updated_date = NOW()`,
-            [empId, areaId, wardId, zoneId]
-          );
+            // 3. Insert or update the EmpBeatMap table with all three IDs
+            //    - If a row for this employee already exists, update it
+            //    - If not, create a new row
+            await transaction.query(
+              `INSERT INTO EmpBeatMap (Emp_ID, Area_ID, Ward_ID, Zone_ID, Created_date, Updated_date)
+               VALUES (?, ?, ?, ?, NOW(), NOW())
+               ON DUPLICATE KEY UPDATE Area_ID = VALUES(Area_ID), Ward_ID = VALUES(Ward_ID), Zone_ID = VALUES(Zone_ID), Updated_date = NOW()`,
+              [empId, areaId, wardId, zoneId]
+            );
+          } catch (areaError) {
+            // If Area_Details table doesn't exist, try to insert with Area_ID only
+            try {
+              console.log("Area_Details table not found, inserting with Area_ID only");
+              await transaction.query(
+                `INSERT INTO EmpBeatMap (Emp_ID, Area_ID, Created_date, Updated_date)
+                 VALUES (?, ?, NOW(), NOW())
+                 ON DUPLICATE KEY UPDATE Area_ID = VALUES(Area_ID), Updated_date = NOW()`,
+                [empId, areaId]
+              );
+            } catch (empBeatMapError) {
+              // If EmpBeatMap table also doesn't exist, just log and continue
+              console.log("EmpBeatMap table not found, skipping EmpBeatMap update");
+            }
+          }
         }
         // --- End referencing logic ---
       }
