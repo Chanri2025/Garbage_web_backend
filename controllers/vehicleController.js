@@ -1,13 +1,64 @@
 const db = require("../config/db.sql");
-const Vehicle = require("../models/vehicleModel"); 
+const Vehicle = require("../models/vehicleModel");
 
 // Get all vehicles
 exports.getAllVehicles = (req, res) => {
-  db.query("SELECT * FROM vehicle_details", (err, results) => {
+  // First verify the vehicle_details table
+  db.query("SHOW TABLES LIKE 'vehicle_details'", (err, tables) => {
     if (err) {
-      return res.status(500).json({ error: "Failed to fetch vehicles" });
+      console.error("Error checking tables:", err);
+      return res.status(500).json({ error: "Database error" });
     }
-    res.json(results);
+
+    if (tables.length === 0) {
+      return res.status(500).json({ error: "Vehicle table not found" });
+    }
+
+    // Now check the structure of vehicle_details
+    db.query("DESCRIBE vehicle_details", (err, columns) => {
+      if (err) {
+        console.error("Error checking vehicle table structure:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      // Verify if Assigned_EMP_ID exists
+      const hasAssignedEmpId = columns.some(col => col.Field === 'Assigned_EMP_ID');
+      
+      // If no Assigned_Emp_ID column, just return vehicle details
+      if (!hasAssignedEmpId) {
+        db.query("SELECT * FROM vehicle_details", (err, results) => {
+          if (err) {
+            console.error("Error fetching vehicles:", err);
+            return res.status(500).json({ error: "Failed to fetch vehicles" });
+          }
+          return res.json(results);
+        });
+        return;
+      }
+
+      // If we have Assigned_EMP_ID, try the join
+      const query = `
+        SELECT v.*, 
+               IFNULL(e.Full_Name, '') as employee_name
+        FROM vehicle_details v 
+        LEFT JOIN employee_table e ON v.Assigned_EMP_ID = e.Emp_ID`;
+
+      db.query(query, (err, results) => {
+        if (err) {
+          console.error("Error fetching vehicles with employee names:", err);
+          // Fallback to just vehicle details if join fails
+          db.query("SELECT * FROM vehicle_details", (err2, results2) => {
+            if (err2) {
+              console.error("Error in fallback query:", err2);
+              return res.status(500).json({ error: "Failed to fetch vehicles" });
+            }
+            return res.json(results2);
+          });
+          return;
+        }
+        res.json(results);
+      });
+    });
   });
 };
 
@@ -21,7 +72,20 @@ exports.createVehicle = async (req, res) => {
     await connection.beginTransaction();
 
     const data = req.body;
-    const { Vehicle_ID, Assigned_Emp_ID } = data;
+    const { Assigned_Emp_ID } = data;
+
+    // Auto-generate Vehicle_ID by finding the next available ID
+    const [existingVehicles] = await connection.query(
+      "SELECT Vehicle_ID FROM vehicle_details ORDER BY Vehicle_ID DESC LIMIT 1"
+    );
+
+    let newVehicleId = 1;
+    if (existingVehicles.length > 0) {
+      newVehicleId = existingVehicles[0].Vehicle_ID + 1;
+    }
+
+    // Set the auto-generated ID and remove any provided ID
+    data.Vehicle_ID = newVehicleId;
 
     // 1. Insert new vehicle
     await connection.query("INSERT INTO vehicle_details SET ?", data);
@@ -50,7 +114,7 @@ exports.createVehicle = async (req, res) => {
         `UPDATE employee_table 
          SET Assigned_Vehicle_ID = ? 
          WHERE Emp_ID = ?`,
-        [Vehicle_ID, Assigned_Emp_ID]
+        [newVehicleId, Assigned_Emp_ID]
       );
 
       // Re-set Assigned_EMP_ID in the newly created vehicle row
@@ -58,12 +122,15 @@ exports.createVehicle = async (req, res) => {
         `UPDATE vehicle_details 
          SET Assigned_Emp_ID = ? 
          WHERE Vehicle_ID = ?`,
-        [Assigned_Emp_ID, Vehicle_ID]
+        [Assigned_Emp_ID, newVehicleId]
       );
     }
 
     await connection.commit();
-    res.status(201).json({ message: "Vehicle created and employee updated." });
+    res.status(201).json({ 
+      message: "Vehicle created and employee updated.",
+      vehicleId: newVehicleId
+    });
 
   } catch (err) {
     await connection.rollback();
@@ -174,17 +241,20 @@ exports.deleteVehicle = (req, res) => {
 exports.getVehicleByEmployeeId = (req, res) => {
   const { employeeId } = req.params;
 
-  db.query(
-    "SELECT * FROM vehicle_details WHERE Assigned_Emp_ID = ?",
-    [employeeId],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (results.length === 0) {
-        return res.status(404).json({ message: "No vehicle found for this employee." });
-      }
-      res.json(results[0]); 
+  const query = `
+    SELECT v.*, 
+           e.Full_Name as employee_name
+    FROM vehicle_details v 
+    LEFT JOIN employee_table e ON v.Assigned_EMP_ID = e.Emp_ID 
+    WHERE v.Assigned_EMP_ID = ?`;
+
+  db.query(query, [employeeId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) {
+      return res.status(404).json({ message: "No vehicle found for this employee." });
     }
-  );
+    res.json(results[0]);
+  });
 };
 
 exports.getVehicleAndEmployeeByEmpId = async (req, res) => {
@@ -202,7 +272,7 @@ exports.getVehicleAndEmployeeByEmpId = async (req, res) => {
           return res.status(404).json({ message: "Employee not found" });
         }
 
-        const employee = results[0]; 
+        const employee = results[0];
 
         const vehicle = await Vehicle.findOne({ assignedTo: employeeId });
 

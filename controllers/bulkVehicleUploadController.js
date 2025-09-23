@@ -10,7 +10,16 @@ const EXPECTED_HEADERS = [
 
 // Validate CSV headers
 const validateHeaders = (headers) => {
-  const missingHeaders = EXPECTED_HEADERS.filter(header => !headers.includes(header));
+  console.log('Validating headers:', headers);
+  console.log('Expected headers:', EXPECTED_HEADERS);
+  
+  // Normalize headers (trim and convert to lowercase)
+  const normalizedHeaders = headers.map(h => h.trim().toLowerCase());
+  const normalizedExpected = EXPECTED_HEADERS.map(h => h.toLowerCase());
+  
+  console.log('Normalized headers:', normalizedHeaders);
+  
+  const missingHeaders = normalizedExpected.filter(header => !normalizedHeaders.includes(header));
   if (missingHeaders.length > 0) {
     throw new Error(`Missing required headers: ${missingHeaders.join(', ')}`);
   }
@@ -19,8 +28,24 @@ const validateHeaders = (headers) => {
 
 // Validate required fields in a row
 const validateRow = (row) => {
+  console.log('Validating row:', row);
+  
   const requiredFields = ['Vehicle_ID', 'Vehicle_No', 'Vehicle_Type'];
-  const missingFields = requiredFields.filter(field => !row[field] || row[field].trim() === '');
+  console.log('Checking required fields:', requiredFields);
+  
+  // Check each field's value
+  Object.entries(row).forEach(([key, value]) => {
+    console.log(`Field ${key}:`, value, typeof value);
+  });
+  
+  const missingFields = requiredFields.filter(field => {
+    const value = row[field];
+    const isEmpty = !value || (typeof value === 'string' && value.trim() === '');
+    if (isEmpty) {
+      console.log(`Field ${field} is missing or empty:`, value);
+    }
+    return isEmpty;
+  });
   
   if (missingFields.length > 0) {
     throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
@@ -28,6 +53,7 @@ const validateRow = (row) => {
   
   // Validate date format
   if (row.Joined_Date) {
+    console.log('Validating date:', row.Joined_Date);
     const date = new Date(row.Joined_Date);
     if (isNaN(date.getTime())) {
       throw new Error(`Invalid date format for Joined_Date: ${row.Joined_Date}`);
@@ -35,10 +61,14 @@ const validateRow = (row) => {
   }
   
   // Validate boolean field
-  if (row.isActive && !['true', 'false', '1', '0', 'yes', 'no'].includes(row.isActive.toLowerCase())) {
-    throw new Error(`Invalid boolean value for isActive: ${row.isActive}`);
+  if (row.isActive) {
+    console.log('Validating isActive:', row.isActive);
+    if (!['true', 'false', '1', '0', 'yes', 'no'].includes(row.isActive.toString().toLowerCase())) {
+      throw new Error(`Invalid boolean value for isActive: ${row.isActive}`);
+    }
   }
   
+  console.log('Row validation successful');
   return true;
 };
 
@@ -136,11 +166,22 @@ const upsertVehicle = async (connection, vehicleData) => {
 // Main bulk upload function
 exports.bulkUploadVehicles = async (req, res) => {
   console.log('Vehicle bulk upload request received');
+  console.log('Request file:', req.file);
+  console.log('Request body:', req.body);
   
   if (!req.file) {
+    console.log('No file in request');
     return res.status(400).json({
       success: false,
       message: 'No CSV file uploaded'
+    });
+  }
+  
+  if (!req.file.path) {
+    console.log('No file path available');
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid file upload'
     });
   }
   
@@ -155,11 +196,28 @@ exports.bulkUploadVehicles = async (req, res) => {
     // Parse CSV file
     const csvData = [];
     await new Promise((resolve, reject) => {
-      fs.createReadStream(filePath)
-        .pipe(csv())
-        .on('data', (row) => csvData.push(row))
-        .on('end', resolve)
-        .on('error', reject);
+      const stream = fs.createReadStream(filePath)
+        .on('error', (error) => {
+          console.error('Error reading CSV file:', error);
+          reject(new Error(`Failed to read CSV file: ${error.message}`));
+        });
+
+      stream.pipe(csv({
+        mapHeaders: ({ header }) => header.trim(),
+        mapValues: ({ value }) => value.trim()
+      }))
+      .on('data', (row) => {
+        console.log('Processing CSV row:', row);
+        csvData.push(row);
+      })
+      .on('end', () => {
+        console.log('CSV parsing completed. Total rows:', csvData.length);
+        resolve();
+      })
+      .on('error', (error) => {
+        console.error('Error parsing CSV:', error);
+        reject(new Error(`Failed to parse CSV: ${error.message}`));
+      });
     });
     
     if (csvData.length === 0) {
@@ -237,6 +295,9 @@ exports.bulkUploadVehicles = async (req, res) => {
     }
     
   } catch (error) {
+    console.error('Bulk upload error:', error);
+    console.error('Error stack:', error.stack);
+    
     // Clean up uploaded file on error
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
@@ -245,7 +306,8 @@ exports.bulkUploadVehicles = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Vehicle bulk upload failed',
-      error: error.message
+      error: error.message,
+      details: error.stack
     });
   }
 };
