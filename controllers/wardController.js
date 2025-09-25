@@ -21,27 +21,69 @@ exports.getWardsByZone = (req, res) => {
   });
 };
 
-exports.createWard = (req, res) => {
-  const data = req.body;
+exports.createWard = async (req, res) => {
+  try {
+    const { Ward_Name, Zone_ID, Created_date, Updated_date } = req.body;
 
-  // If Zone_ID is provided, check if it exists
-  if (data.Zone_ID) {
-    db.query("SELECT * FROM zone_details WHERE Zone_ID = ?", [data.Zone_ID], (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (results.length === 0) {
+    // Validate required fields
+    if (!Ward_Name) {
+      return res.status(400).json({ error: "Ward_Name is required" });
+    }
+
+    // Auto-generate Ward_ID by finding the next available ID
+    const [existingWards] = await db.promise().query(
+      "SELECT Ward_ID FROM ward_details ORDER BY Ward_ID DESC LIMIT 1"
+    );
+
+    let nextWardId = 1;
+    if (existingWards.length > 0) {
+      nextWardId = existingWards[0].Ward_ID + 1;
+    }
+
+    // If Zone_ID is provided, validate it exists
+    if (Zone_ID) {
+      const [zoneResults] = await db.promise().query(
+        "SELECT * FROM zone_details WHERE Zone_ID = ?", 
+        [Zone_ID]
+      );
+      if (zoneResults.length === 0) {
         return res.status(400).json({ error: "Zone_ID does not exist in zone_details." });
       }
-      // Proceed to insert
-      db.query("INSERT INTO ward_details SET ?", data, (err2, result) => {
-        if (err2) return res.status(500).json({ error: err2.message });
-        res.status(201).json({ message: "Ward created", id: result.insertId });
-      });
+    }
+
+    // Set default dates if not provided
+    const now = new Date();
+    const createdDate = Created_date || now;
+    const updatedDate = Updated_date || now;
+
+    // Prepare ward data with auto-generated ID
+    const wardData = {
+      Ward_ID: nextWardId,
+      Ward_Name: Ward_Name,
+      Zone_ID: Zone_ID || null,
+      Created_date: createdDate,
+      Updated_date: updatedDate
+    };
+
+    // Insert the ward
+    await db.promise().query("INSERT INTO ward_details SET ?", wardData);
+
+    res.status(201).json({ 
+      message: "Ward created successfully", 
+      data: {
+        Ward_ID: nextWardId,
+        Ward_Name: Ward_Name,
+        Zone_ID: Zone_ID || null,
+        Created_date: createdDate,
+        Updated_date: updatedDate
+      }
     });
-  } else {
-    // No Zone_ID, insert as is
-    db.query("INSERT INTO ward_details SET ?", data, (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.status(201).json({ message: "Ward created", id: result.insertId });
+
+  } catch (error) {
+    console.error('Error creating ward:', error);
+    res.status(500).json({ 
+      error: "Failed to create ward", 
+      details: error.message 
     });
   }
 };

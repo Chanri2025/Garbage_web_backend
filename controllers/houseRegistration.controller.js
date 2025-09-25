@@ -36,7 +36,7 @@ exports.getAllHouses = async (req, res) => {
     // Standardize field keys and include employee details
     const formatted = await Promise.all(houses.map(async (house) => {
       let employeeDetails = null;
-      
+
       // Fetch employee details if Emp_ID exists
       if (house.Emp_ID) {
         try {
@@ -77,20 +77,24 @@ exports.createHouse = async (req, res) => {
       try {
         const employeeExists = await getEmployeeDetails(req.body.Emp_ID);
         if (!employeeExists) {
-          return res.status(400).json({ 
-            error: "Invalid Employee ID", 
-            message: "Employee with the specified Emp_ID does not exist in the employee table" 
+          return res.status(400).json({
+            error: "Invalid Employee ID",
+            message: "Employee with the specified Emp_ID does not exist in the employee table"
           });
         }
       } catch (err) {
-        return res.status(500).json({ 
-          error: "Employee validation failed", 
-          message: "Could not validate employee ID" 
+        return res.status(500).json({
+          error: "Employee validation failed",
+          message: "Could not validate employee ID"
         });
       }
     }
 
-    let house = new HouseDetails(req.body);
+    // Remove House_ID from request body (it will be auto-generated)
+    const houseData = { ...req.body };
+    delete houseData.House_ID;
+
+    let house = new HouseDetails(houseData);
     house = await house.save();
 
     const qrData = `houseId=${house.House_ID}&areaId=${house.Area_ID}`;
@@ -116,7 +120,7 @@ exports.getHouseById = async (req, res) => {
   try {
     const house = await HouseDetails.findById(req.params.id);
     if (!house) return res.status(404).json({ message: "House not found" });
-    
+
     // Include employee details if Emp_ID exists
     let employeeDetails = null;
     if (house.Emp_ID) {
@@ -126,12 +130,12 @@ exports.getHouseById = async (req, res) => {
         console.error(`Error fetching employee details for Emp_ID ${house.Emp_ID}:`, err);
       }
     }
-    
+
     const houseWithEmployee = {
       ...house.toObject(),
       employee_details: employeeDetails
     };
-    
+
     res.json(houseWithEmployee);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -147,7 +151,7 @@ exports.updateHouse = async (req, res) => {
     const house = await HouseDetails.findById(houseId);
     if (!house) return res.status(404).json({ message: "House not found" });
 
-    const qrData = `houseId=${newData.House_ID || house.House_ID}&areaId=${newData.Area_ID || house.Area_ID}`;
+    const qrData = `houseId=${house.House_ID}&areaId=${newData.Area_ID || house.Area_ID}`;
     const qrBuffer = await QRCode.toBuffer(qrData, { type: "png", errorCorrectionLevel: "H" });
 
     const uploadStream = cloudinary.uploader.upload_stream({ folder: "qrcode/house" },
@@ -180,19 +184,19 @@ exports.deleteHouse = async (req, res) => {
 exports.getHousesWithEmployeeDetails = async (req, res) => {
   try {
     const { emp_id, area_id, property_type } = req.query;
-    
+
     // Build filter for MongoDB
     const filter = {};
     if (emp_id) filter.Emp_ID = parseInt(emp_id);
     if (area_id) filter.Area_ID = parseInt(area_id);
     if (property_type) filter.Property_Type = { $regex: property_type, $options: 'i' };
-    
+
     const houses = await HouseDetails.find(filter);
-    
+
     // Include employee details for each house
     const housesWithEmployees = await Promise.all(houses.map(async (house) => {
       let employeeDetails = null;
-      
+
       if (house.Emp_ID) {
         try {
           employeeDetails = await getEmployeeDetails(house.Emp_ID);
@@ -200,7 +204,7 @@ exports.getHousesWithEmployeeDetails = async (req, res) => {
           console.error(`Error fetching employee details for Emp_ID ${house.Emp_ID}:`, err);
         }
       }
-      
+
       return {
         _id: house._id,
         house_id: house.House_ID,
@@ -217,7 +221,7 @@ exports.getHousesWithEmployeeDetails = async (req, res) => {
         employee_details: employeeDetails
       };
     }));
-    
+
     res.json({
       success: true,
       count: housesWithEmployees.length,
@@ -247,10 +251,10 @@ exports.getHouseFromQRCode = async (req, res) => {
       if (!house) return res.status(404).json({ message: "House not found" });
 
       const scannedBuffer = await fs.promises.readFile(imagePath);
-      const uploadStream = cloudinary.uploader.upload_stream({ folder: "qrcode/scanned" }, () => {});
+      const uploadStream = cloudinary.uploader.upload_stream({ folder: "qrcode/scanned" }, () => { });
       uploadStream.end(scannedBuffer);
 
-      fs.unlink(imagePath, () => {});
+      fs.unlink(imagePath, () => { });
       return res.status(200).json({ message: "House found", data: house });
     };
 

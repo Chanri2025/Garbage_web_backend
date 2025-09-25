@@ -15,7 +15,7 @@ const validateForeignKey = (table, idField, idValue) => {
 // Helper function to sanitize area input data
 const sanitizeAreaInput = (data) => {
   return {
-    Area_ID: data.Area_ID ? parseInt(data.Area_ID) : null,
+    Area_ID: data.Area_ID ? parseInt(data.Area_ID) : null, // Will be auto-generated if not provided
     Coordinates: data.Coordinates ? data.Coordinates.toString().trim() : null,
     Area_Name: data.Area_Name ? data.Area_Name.toString().trim() : null,
     Zone_ID: data.Zone_ID ? parseInt(data.Zone_ID) : null,
@@ -31,17 +31,30 @@ exports.getAllAreas = (req, res, next) => {
   });
 };
 
-// Create new area with relationship validation
+// Create new area with auto-generated Area_ID and relationship validation
 exports.createArea = async (req, res, next) => {
   try {
     const sanitizedData = sanitizeAreaInput(req.body);
     const { Area_ID, Coordinates, Area_Name, Zone_ID, WARD_ID } = sanitizedData;
 
     // Basic validations
-    if (!Area_ID || !Coordinates || !Area_Name) {
+    if (!Coordinates || !Area_Name) {
       return res.status(400).json({
-        error: "Area_ID, Coordinates, and Area_Name are required",
+        error: "Coordinates and Area_Name are required",
       });
+    }
+
+    // Auto-generate Area_ID if not provided
+    let finalAreaId = Area_ID;
+    if (!finalAreaId) {
+      const [existingAreas] = await db.promise().query(
+        "SELECT Area_ID FROM area_details ORDER BY Area_ID DESC LIMIT 1"
+      );
+
+      finalAreaId = 1;
+      if (existingAreas.length > 0) {
+        finalAreaId = existingAreas[0].Area_ID + 1;
+      }
     }
 
     // Validate Zone_ID if provided
@@ -85,10 +98,10 @@ exports.createArea = async (req, res, next) => {
       });
     }
 
-    // Insert Area
+    // Insert Area with auto-generated ID
     const now = new Date();
     const data = {
-      Area_ID,
+      Area_ID: finalAreaId,
       Coordinates,
       Area_Name,
       Zone_ID: Zone_ID || null,
@@ -107,7 +120,15 @@ exports.createArea = async (req, res, next) => {
 
       return res.status(201).json({
         message: "Area created successfully",
-        area: data,
+        data: {
+          Area_ID: finalAreaId,
+          Coordinates: Coordinates,
+          Area_Name: Area_Name,
+          Zone_ID: Zone_ID || null,
+          WARD_ID: WARD_ID || null,
+          Created_Date: now,
+          Update_Date: now
+        }
       });
     });
   } catch (error) {
