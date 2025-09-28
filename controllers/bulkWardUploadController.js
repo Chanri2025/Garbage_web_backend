@@ -4,7 +4,7 @@ const db = require('../config/db.sql');
 
 // Expected CSV headers for ward upload
 const EXPECTED_HEADERS = [
-  'Ward_ID', 'Ward_Name', 'Zone_ID'
+  'Ward_Name', 'Zone_Name' // Only Ward_Name and Zone_Name required, Ward_ID will be auto-generated
 ];
 
 // Validate CSV headers
@@ -18,7 +18,7 @@ const validateHeaders = (headers) => {
 
 // Validate required fields in a row
 const validateRow = (row) => {
-  const requiredFields = ['Ward_ID', 'Ward_Name', 'Zone_ID'];
+  const requiredFields = ['Ward_Name', 'Zone_Name'];
   const missingFields = requiredFields.filter(field => !row[field] || row[field].trim() === '');
   
   if (missingFields.length > 0) {
@@ -28,84 +28,124 @@ const validateRow = (row) => {
   return true;
 };
 
-// Check if ward exists
+// Get next available Ward_ID
+const getNextWardId = async (connection) => {
+  try {
+    const [results] = await connection.query(
+      'SELECT Ward_ID FROM ward_details ORDER BY Ward_ID DESC LIMIT 1'
+    );
+    
+    let nextId = 1;
+    if (results.length > 0) {
+      nextId = results[0].Ward_ID + 1;
+    }
+    console.log('Next Ward_ID:', nextId);
+    return nextId;
+  } catch (err) {
+    console.error('Error getting next Ward_ID:', err);
+    return 1; // Default to 1 if error
+  }
+};
+
+// Lookup Zone_ID from Zone_Name
+const getZoneIdByName = async (connection, zoneName) => {
+  if (!zoneName) return null;
+  
+  try {
+    const [results] = await connection.query(
+      'SELECT Zone_ID, Zone_Name FROM zone_details WHERE Zone_Name = ? OR Zone_ID = ?',
+      [zoneName, zoneName]
+    );
+    
+    if (results.length > 0) {
+      const zoneId = results[0].Zone_ID;
+      const foundName = results[0].Zone_Name;
+      console.log(`Zone lookup: "${zoneName}" -> ID: ${zoneId}, Found: "${foundName}"`);
+      return zoneId;
+    } else {
+      console.log(`❌ No zone found for: "${zoneName}"`);
+      return null;
+    }
+  } catch (err) {
+    console.error('Zone lookup error:', err);
+    return null;
+  }
+};
+
+// Check if ward name already exists (prevent duplicates)
+const wardNameExists = async (connection, wardName) => {
+  try {
+    const [results] = await connection.query(
+      'SELECT Ward_ID, Ward_Name FROM ward_details WHERE Ward_Name = ?',
+      [wardName]
+    );
+    
+    if (results.length > 0) {
+      console.log(`Ward name "${wardName}" already exists with ID: ${results[0].Ward_ID}`);
+      return results[0];
+    }
+    return null;
+  } catch (err) {
+    console.error('Error checking ward name:', err);
+    return null;
+  }
+};
+
+// Check if ward exists by ID
 const wardExists = async (connection, wardId) => {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      resolve(false);
-    }, 5000);
-    
-    connection.query(
+  try {
+    const [results] = await connection.query(
       'SELECT Ward_ID FROM ward_details WHERE Ward_ID = ?',
-      [wardId],
-      (err, results) => {
-        clearTimeout(timeout);
-        if (err) reject(err);
-        else resolve(results.length > 0);
-      }
+      [wardId]
     );
-  });
+    return results.length > 0;
+  } catch (err) {
+    console.error('Error checking if ward exists:', err);
+    return false;
+  }
 };
 
-// Check if zone exists
-const zoneExists = async (connection, zoneId) => {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      resolve(false);
-    }, 5000);
+// Insert new ward with auto-generated ID
+const insertWard = async (connection, wardData) => {
+  const { Ward_Name, Zone_Name } = wardData;
+  
+  console.log('Inserting new ward:', wardData);
+  
+  // Check if ward name already exists
+  const existingWard = await wardNameExists(connection, Ward_Name);
+  if (existingWard) {
+    throw new Error(`Ward name "${Ward_Name}" already exists with ID: ${existingWard.Ward_ID}`);
+  }
+  
+  // Lookup Zone_ID from Zone_Name
+  const zoneId = await getZoneIdByName(connection, Zone_Name);
+  if (!zoneId) {
+    throw new Error(`Zone "${Zone_Name}" not found`);
+  }
+  
+  // Get next available Ward_ID
+  const wardId = await getNextWardId(connection);
+  
+  try {
+    const query = `
+      INSERT INTO ward_details (
+        Ward_ID, Ward_Name, Zone_ID, Created_Date, Updated_Date
+      ) VALUES (?, ?, ?, NOW(), NOW())
+    `;
     
-    connection.query(
-      'SELECT Zone_ID FROM zone_details WHERE Zone_ID = ?',
-      [zoneId],
-      (err, results) => {
-        clearTimeout(timeout);
-        if (err) reject(err);
-        else resolve(results.length > 0);
-      }
-    );
-  });
-};
-
-// Insert or update ward
-const upsertWard = async (connection, wardData) => {
-  const {
-    Ward_ID, Ward_Name, Zone_ID
-  } = wardData;
-  
-  const exists = await wardExists(connection, Ward_ID);
-  
-  if (exists) {
-    // Update existing ward
-    return new Promise((resolve, reject) => {
-      const query = `
-        UPDATE ward_details SET 
-          Ward_Name = ?, Zone_ID = ?
-        WHERE Ward_ID = ?
-      `;
-      
-      connection.query(query, [
-        Ward_Name, Zone_ID, Ward_ID
-      ], (err, result) => {
-        if (err) reject(err);
-        else resolve({ type: 'update', wardId: Ward_ID });
-      });
-    });
-  } else {
-    // Insert new ward
-    return new Promise((resolve, reject) => {
-      const query = `
-        INSERT INTO ward_details (
-          Ward_ID, Ward_Name, Zone_ID
-        ) VALUES (?, ?, ?)
-      `;
-      
-      connection.query(query, [
-        Ward_ID, Ward_Name, Zone_ID
-      ], (err, result) => {
-        if (err) reject(err);
-        else resolve({ type: 'insert', wardId: Ward_ID });
-      });
-    });
+    const params = [wardId, Ward_Name, zoneId];
+    
+    console.log('Executing INSERT query:', query);
+    console.log('With parameters:', params);
+    
+    const [result] = await connection.query(query, params);
+    console.log('✅ INSERT query result:', result);
+    console.log(`✅ Inserted ${result.affectedRows} rows, Ward_ID: ${wardId}`);
+    
+    return { type: 'insert', wardId: wardId, zoneId: zoneId };
+  } catch (err) {
+    console.error('❌ INSERT query error:', err);
+    throw err;
   }
 };
 
@@ -150,6 +190,10 @@ exports.bulkUploadWards = async (req, res) => {
     const connection = await db.promise().getConnection();
     
     try {
+      // Start transaction
+      await connection.beginTransaction();
+      console.log('Database transaction started');
+      
       for (const row of csvData) {
         processedCount++;
         
@@ -157,21 +201,18 @@ exports.bulkUploadWards = async (req, res) => {
           // Validate row data
           validateRow(row);
           
-          // Check if zone exists
-          const zoneExistsResult = await zoneExists(connection, row.Zone_ID);
-          if (!zoneExistsResult) {
-            throw new Error(`Zone_ID ${row.Zone_ID} not found`);
-          }
-          
-          // Insert/update ward
-          const result = await upsertWard(connection, row);
+          // Insert ward with auto-generated ID and zone lookup
+          const result = await insertWard(connection, row);
           
           results.push({
             row: processedCount,
-            wardId: row.Ward_ID,
+            wardId: result.wardId,
+            wardName: row.Ward_Name,
+            zoneName: row.Zone_Name,
+            zoneId: result.zoneId,
             status: 'success',
             type: result.type,
-            message: `Ward ${result.type === 'insert' ? 'created' : 'updated'} successfully`
+            message: `Ward "${row.Ward_Name}" created successfully with ID: ${result.wardId} in Zone: ${row.Zone_Name} (${result.zoneId})`
           });
           
           successCount++;
@@ -179,7 +220,8 @@ exports.bulkUploadWards = async (req, res) => {
         } catch (rowError) {
           errors.push({
             row: processedCount,
-            wardId: row.Ward_ID || 'N/A',
+            wardName: row.Ward_Name || 'N/A',
+            zoneName: row.Zone_Name || 'N/A',
             status: 'error',
             message: rowError.message,
             data: row
@@ -187,6 +229,10 @@ exports.bulkUploadWards = async (req, res) => {
           errorCount++;
         }
       }
+      
+      // Commit transaction
+      await connection.commit();
+      console.log('Database transaction committed successfully');
       
       connection.release();
       
@@ -206,6 +252,13 @@ exports.bulkUploadWards = async (req, res) => {
       });
       
     } catch (error) {
+      // Rollback transaction on error
+      try {
+        await connection.rollback();
+        console.log('Database transaction rolled back due to error');
+      } catch (rollbackError) {
+        console.error('Error during rollback:', rollbackError);
+      }
       connection.release();
       throw error;
     }

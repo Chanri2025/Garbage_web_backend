@@ -4,7 +4,7 @@ const db = require('../config/db.sql');
 
 // Expected CSV headers for zone upload
 const EXPECTED_HEADERS = [
-  'Zone_ID', 'Zone_Name', 'Description'
+  'Zone_Name' // Only Zone_Name is required, Zone_ID will be auto-generated
 ];
 
 // Validate CSV headers
@@ -18,7 +18,7 @@ const validateHeaders = (headers) => {
 
 // Validate required fields in a row
 const validateRow = (row) => {
-  const requiredFields = ['Zone_ID', 'Zone_Name'];
+  const requiredFields = ['Zone_Name'];
   const missingFields = requiredFields.filter(field => !row[field] || row[field].trim() === '');
   
   if (missingFields.length > 0) {
@@ -28,65 +28,93 @@ const validateRow = (row) => {
   return true;
 };
 
-// Check if zone exists
-const zoneExists = async (connection, zoneId) => {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      resolve(false);
-    }, 5000);
-    
-    connection.query(
-      'SELECT Zone_ID FROM zone_details WHERE Zone_ID = ?',
-      [zoneId],
-      (err, results) => {
-        clearTimeout(timeout);
-        if (err) reject(err);
-        else resolve(results.length > 0);
-      }
+// Get next available Zone_ID
+const getNextZoneId = async (connection) => {
+  try {
+    const [results] = await connection.query(
+      'SELECT Zone_ID FROM zone_details ORDER BY Zone_ID DESC LIMIT 1'
     );
-  });
+    
+    let nextId = 1;
+    if (results.length > 0) {
+      nextId = results[0].Zone_ID + 1;
+    }
+    console.log('Next Zone_ID:', nextId);
+    return nextId;
+  } catch (err) {
+    console.error('Error getting next Zone_ID:', err);
+    return 1; // Default to 1 if error
+  }
 };
 
-// Insert or update zone
-const upsertZone = async (connection, zoneData) => {
-  const {
-    Zone_ID, Zone_Name, Description
-  } = zoneData;
+// Check if zone name already exists (prevent duplicates)
+const zoneNameExists = async (connection, zoneName) => {
+  try {
+    const [results] = await connection.query(
+      'SELECT Zone_ID, Zone_Name FROM zone_details WHERE Zone_Name = ?',
+      [zoneName]
+    );
+    
+    if (results.length > 0) {
+      console.log(`Zone name "${zoneName}" already exists with ID: ${results[0].Zone_ID}`);
+      return results[0];
+    }
+    return null;
+  } catch (err) {
+    console.error('Error checking zone name:', err);
+    return null;
+  }
+};
+
+// Check if zone exists by ID
+const zoneExists = async (connection, zoneId) => {
+  try {
+    const [results] = await connection.query(
+      'SELECT Zone_ID FROM zone_details WHERE Zone_ID = ?',
+      [zoneId]
+    );
+    return results.length > 0;
+  } catch (err) {
+    console.error('Error checking if zone exists:', err);
+    return false;
+  }
+};
+
+// Insert new zone with auto-generated ID
+const insertZone = async (connection, zoneData) => {
+  const { Zone_Name, Description } = zoneData;
   
-  const exists = await zoneExists(connection, Zone_ID);
+  console.log('Inserting new zone:', zoneData);
   
-  if (exists) {
-    // Update existing zone
-    return new Promise((resolve, reject) => {
-      const query = `
-        UPDATE zone_details SET 
-          Zone_Name = ?, Description = ?
-        WHERE Zone_ID = ?
-      `;
-      
-      connection.query(query, [
-        Zone_Name, Description || null, Zone_ID
-      ], (err, result) => {
-        if (err) reject(err);
-        else resolve({ type: 'update', zoneId: Zone_ID });
-      });
-    });
-  } else {
-    // Insert new zone
-    return new Promise((resolve, reject) => {
-      const query = `
-        INSERT INTO zone_details (
-          Zone_ID, Zone_Name, Description
-        ) VALUES (?, ?, ?)
-      `;
-      
-      connection.query(query, [
-        Zone_ID, Zone_Name, Description || null
-      ], (err, result) => {
-        if (err) reject(err);
-        else resolve({ type: 'insert', zoneId: Zone_ID });
-      });
-    });
+  // Check if zone name already exists
+  const existingZone = await zoneNameExists(connection, Zone_Name);
+  if (existingZone) {
+    throw new Error(`Zone name "${Zone_Name}" already exists with ID: ${existingZone.Zone_ID}`);
+  }
+  
+  // Get next available Zone_ID
+  const zoneId = await getNextZoneId(connection);
+  
+  try {
+    const query = `
+      INSERT INTO zone_details (
+        Zone_ID, Zone_Name, Created_Date, Updated_Date
+      ) VALUES (?, ?, NOW(), NOW())
+    `;
+    
+    const params = [zoneId, Zone_Name];
+    
+    console.log('Executing INSERT query:', query);
+    console.log('With parameters:', params);
+    
+    const [result] = await connection.query(query, params);
+    console.log('✅ INSERT query result:', result);
+    console.log(`✅ Inserted ${result.affectedRows} rows, Zone_ID: ${zoneId}`);
+    
+    return { type: 'insert', zoneId: zoneId };
+  } catch (err) {
+    console.error('❌ INSERT query error:', err);
+    throw err;
   }
 };
 
@@ -131,6 +159,10 @@ exports.bulkUploadZones = async (req, res) => {
     const connection = await db.promise().getConnection();
     
     try {
+      // Start transaction
+      await connection.beginTransaction();
+      console.log('Database transaction started');
+      
       for (const row of csvData) {
         processedCount++;
         
@@ -138,15 +170,16 @@ exports.bulkUploadZones = async (req, res) => {
           // Validate row data
           validateRow(row);
           
-          // Insert/update zone
-          const result = await upsertZone(connection, row);
+          // Insert zone with auto-generated ID
+          const result = await insertZone(connection, row);
           
           results.push({
             row: processedCount,
-            zoneId: row.Zone_ID,
+            zoneId: result.zoneId,
+            zoneName: row.Zone_Name,
             status: 'success',
             type: result.type,
-            message: `Zone ${result.type === 'insert' ? 'created' : 'updated'} successfully`
+            message: `Zone "${row.Zone_Name}" created successfully with ID: ${result.zoneId}`
           });
           
           successCount++;
@@ -154,7 +187,7 @@ exports.bulkUploadZones = async (req, res) => {
         } catch (rowError) {
           errors.push({
             row: processedCount,
-            zoneId: row.Zone_ID || 'N/A',
+            zoneName: row.Zone_Name || 'N/A',
             status: 'error',
             message: rowError.message,
             data: row
@@ -162,6 +195,10 @@ exports.bulkUploadZones = async (req, res) => {
           errorCount++;
         }
       }
+      
+      // Commit transaction
+      await connection.commit();
+      console.log('Database transaction committed successfully');
       
       connection.release();
       
@@ -181,6 +218,13 @@ exports.bulkUploadZones = async (req, res) => {
       });
       
     } catch (error) {
+      // Rollback transaction on error
+      try {
+        await connection.rollback();
+        console.log('Database transaction rolled back due to error');
+      } catch (rollbackError) {
+        console.error('Error during rollback:', rollbackError);
+      }
       connection.release();
       throw error;
     }
