@@ -23,7 +23,6 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
     "express-validator": "^7.2.1",
-    "faker": "^6.6.6",
     "jimp": "^0.22.10",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
