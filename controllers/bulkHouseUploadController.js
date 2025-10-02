@@ -5,8 +5,8 @@ const db = require('../config/db.sql');
 
 // Expected CSV headers for house upload
 const EXPECTED_HEADERS = [
-  'House_ID', 'Property_Type', 'Waste_Generated_Kg_Per_Day', 
-  'Address', 'Coordinates', 'Area_ID', 'Emp_ID'
+  'Property_Type', 'Waste_Generated_Kg_Per_Day', 
+  'Address', 'Coordinates', 'Area_Name' // House_ID will be auto-generated, Emp_ID removed
 ];
 
 // Validate CSV headers
@@ -20,7 +20,7 @@ const validateHeaders = (headers) => {
 
 // Validate required fields in a row
 const validateRow = (row) => {
-  const requiredFields = ['House_ID', 'Property_Type', 'Address'];
+  const requiredFields = ['Property_Type', 'Address'];
   const missingFields = requiredFields.filter(field => !row[field] || row[field].trim() === '');
   
   if (missingFields.length > 0) {
@@ -30,14 +30,6 @@ const validateRow = (row) => {
   // Validate numeric fields
   if (row.Waste_Generated_Kg_Per_Day && isNaN(parseFloat(row.Waste_Generated_Kg_Per_Day))) {
     throw new Error(`Invalid numeric value for Waste_Generated_Kg_Per_Day: ${row.Waste_Generated_Kg_Per_Day}`);
-  }
-  
-  if (row.Area_ID && isNaN(parseInt(row.Area_ID))) {
-    throw new Error(`Invalid numeric value for Area_ID: ${row.Area_ID}`);
-  }
-  
-  if (row.Emp_ID && isNaN(parseInt(row.Emp_ID))) {
-    throw new Error(`Invalid numeric value for Emp_ID: ${row.Emp_ID}`);
   }
   
   // Validate coordinates format (basic validation)
@@ -54,93 +46,95 @@ const validateRow = (row) => {
   return true;
 };
 
-// Check if house exists in MongoDB
-const houseExists = async (houseId) => {
+// Get next available House_ID
+const getNextHouseId = async () => {
   try {
-    const house = await HouseDetails.findOne({ House_ID: parseInt(houseId) });
-    return !!house;
-  } catch (error) {
-    console.error('Error checking house existence:', error);
-    return false;
+    const lastHouse = await HouseDetails.findOne().sort({ House_ID: -1 });
+    let nextId = 1;
+    if (lastHouse && lastHouse.House_ID) {
+      nextId = lastHouse.House_ID + 1;
+    }
+    console.log('Next House_ID:', nextId);
+    return nextId;
+  } catch (err) {
+    console.error('Error getting next House_ID:', err);
+    return 1; // Default to 1 if error
   }
 };
 
-// Check if area exists in MySQL
-const areaExists = async (areaId) => {
-  if (!areaId) return true; // Optional field
+// Lookup Area_ID from Area_Name
+const getAreaIdByName = async (areaName) => {
+  if (!areaName) return null;
+  
+  // Trim whitespace and normalize the area name
+  const trimmedAreaName = areaName.trim();
   
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
-      resolve(false);
+      resolve(null);
     }, 5000);
     
     db.query(
-      'SELECT Area_ID FROM area_details WHERE Area_ID = ?',
-      [areaId],
+      'SELECT Area_ID, Area_Name FROM area_details WHERE TRIM(Area_Name) = ?',
+      [trimmedAreaName],
       (err, results) => {
         clearTimeout(timeout);
-        if (err) reject(err);
-        else resolve(results.length > 0);
+        if (err) {
+          console.error('Area lookup error:', err);
+          resolve(null);
+        } else if (results.length > 0) {
+          const areaId = results[0].Area_ID;
+          const foundName = results[0].Area_Name;
+          console.log(`Area lookup: "${areaName}" (trimmed: "${trimmedAreaName}") -> ID: ${areaId}, Found: "${foundName}"`);
+          resolve(areaId);
+        } else {
+          console.log(`❌ No area found for: "${areaName}" (trimmed: "${trimmedAreaName}")`);
+          resolve(null);
+        }
       }
     );
   });
 };
 
-// Check if employee exists in MySQL
-const employeeExists = async (empId) => {
-  if (!empId) return true; // Optional field
-  
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      resolve(false);
-    }, 5000);
-    
-    db.query(
-      'SELECT Emp_ID FROM employee_table WHERE Emp_ID = ?',
-      [empId],
-      (err, results) => {
-        clearTimeout(timeout);
-        if (err) reject(err);
-        else resolve(results.length > 0);
-      }
-    );
-  });
-};
 
-// Insert or update house
-const upsertHouse = async (houseData) => {
-  const {
-    House_ID, Property_Type, Waste_Generated_Kg_Per_Day, 
-    Address, Coordinates, Area_ID, Emp_ID
-  } = houseData;
+// Insert new house with auto-generated ID and name-based area lookup
+const insertHouse = async (houseData) => {
+  const { Property_Type, Waste_Generated_Kg_Per_Day, Address, Coordinates, Area_Name } = houseData;
   
-  const exists = await houseExists(House_ID);
+  console.log('Inserting new house:', houseData);
+  
+  // Lookup Area_ID from Area_Name (if provided)
+  let areaId = null;
+  if (Area_Name) {
+    areaId = await getAreaIdByName(Area_Name);
+    if (!areaId) {
+      throw new Error(`Area "${Area_Name}" not found`);
+    }
+  }
+  
+  // Get next available House_ID
+  const houseId = await getNextHouseId();
   
   const houseDataToSave = {
-    House_ID: parseInt(House_ID),
+    House_ID: houseId,
     Property_Type,
     Waste_Generated_Kg_Per_Day: Waste_Generated_Kg_Per_Day ? parseFloat(Waste_Generated_Kg_Per_Day) : null,
     Address,
     Coordinates: Coordinates || null,
-    Area_ID: Area_ID ? parseInt(Area_ID) : null,
-    Emp_ID: Emp_ID ? parseInt(Emp_ID) : null,
+    Area_ID: areaId,
+    Emp_ID: null, // Not needed as per requirement
     Created_Date: new Date(),
     Updated_Date: new Date()
   };
   
-  if (exists) {
-    // Update existing house
-    const result = await HouseDetails.findOneAndUpdate(
-      { House_ID: parseInt(House_ID) },
-      { $set: houseDataToSave },
-      { new: true }
-    );
-    return { type: 'update', houseId: House_ID, result };
-  } else {
-    // Insert new house
+  try {
     const newHouse = new HouseDetails(houseDataToSave);
     const result = await newHouse.save();
-    return { type: 'insert', houseId: House_ID, result };
+    console.log(`✅ Inserted house with ID: ${houseId}`);
+    return { type: 'insert', houseId: houseId, areaId: areaId, areaName: Area_Name, result };
+  } catch (err) {
+    console.error('❌ INSERT house error:', err);
+    throw err;
   }
 };
 
@@ -188,31 +182,17 @@ exports.bulkUploadHouses = async (req, res) => {
         // Validate row data
         validateRow(row);
         
-        // Check if area exists in MySQL (if provided)
-        if (row.Area_ID) {
-          const areaExistsResult = await areaExists(row.Area_ID);
-          if (!areaExistsResult) {
-            throw new Error(`Area_ID ${row.Area_ID} not found in area_details table`);
-          }
-        }
-        
-        // Check if employee exists in MySQL (if provided)
-        if (row.Emp_ID) {
-          const employeeExistsResult = await employeeExists(row.Emp_ID);
-          if (!employeeExistsResult) {
-            throw new Error(`Emp_ID ${row.Emp_ID} not found in employee_table`);
-          }
-        }
-        
-        // Insert/update house in MongoDB
-        const result = await upsertHouse(row);
+        // Insert house with auto-generated ID and area name lookup
+        const result = await insertHouse(row);
         
         results.push({
           row: processedCount,
-          houseId: row.House_ID,
+          houseId: result.houseId,
+          areaName: result.areaName || null,
+          areaId: result.areaId || null,
           status: 'success',
           type: result.type,
-          message: `House ${result.type === 'insert' ? 'created' : 'updated'} successfully`
+          message: `House created successfully with ID: ${result.houseId}${result.areaName ? ` in Area: ${result.areaName}` : ''}`
         });
         
         successCount++;
@@ -220,7 +200,7 @@ exports.bulkUploadHouses = async (req, res) => {
       } catch (rowError) {
         errors.push({
           row: processedCount,
-          houseId: row.House_ID || 'N/A',
+          areaName: row.Area_Name || 'N/A',
           status: 'error',
           message: rowError.message,
           data: row
