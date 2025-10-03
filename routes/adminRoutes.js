@@ -9,6 +9,7 @@ const bulkAreaUploadController = require('../controllers/bulkAreaUploadControlle
 const bulkWardUploadController = require('../controllers/bulkWardUploadController');
 const bulkZoneUploadController = require('../controllers/bulkZoneUploadController');
 const bulkHouseUploadController = require('../controllers/bulkHouseUploadController');
+const memberController = require('../controllers/memberController');
 
 // All routes require admin authentication
 router.use(auth);
@@ -54,6 +55,16 @@ router.post('/bulk-upload/houses',
 router.post('/bulk-upload/error-report', 
   bulkEmployeeUploadController.downloadErrorReport
 );
+
+// Member management endpoints
+router.get('/members', memberController.getAllMembers);
+router.get('/members/role/:role', memberController.getMembersByRole);
+router.get('/members/stats', memberController.getMemberStats);
+
+// Member CRUD operations (role-based)
+router.post('/members', memberController.createMember);
+router.put('/members/:id', memberController.updateMember);
+router.delete('/members/:id', memberController.deleteMember);
 
 module.exports = router;
 
