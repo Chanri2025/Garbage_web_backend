@@ -3,6 +3,7 @@ const Admin = require("../models/admin.model");
 const Citizen = require("../models/citizen.model");
 const Employee = require("../models/employee.model");
 const Manager = require("../models/manager.model");
+const { getSecureJWTSecret } = require("./security");
 
 const getUserModel = (role) => {
   switch (role) {
@@ -24,7 +25,7 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "Access denied. No token provided." });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "yoursecretkey");
+    const decoded = jwt.verify(token, getSecureJWTSecret());
     const UserModel = getUserModel(decoded.role);
     
     if (!UserModel) {

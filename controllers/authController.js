@@ -4,6 +4,8 @@ const Citizen = require("../models/citizen.model");
 const Employee = require("../models/employee.model");
 const Manager = require("../models/manager.model");
 const sql = require("../config/db.sql");
+const { hashPassword, verifyPassword, validatePasswordStrength } = require("../utils/passwordUtils");
+const { getSecureJWTSecret } = require("../middleware/security");
 
 const getUserModel = (role) => {
   switch (role) {
@@ -54,8 +56,8 @@ exports.login = async (req, res) => {
       console.log("User not found");
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
-    // In production, use bcrypt to compare hashed passwords!
-    const passwordMatch = user.password === password;
+    // Secure password verification using bcrypt
+    const passwordMatch = await verifyPassword(password, user.password);
     console.log("Password match:", passwordMatch);
     if (!passwordMatch) {
       console.log("Password does not match");
@@ -77,7 +79,7 @@ exports.login = async (req, res) => {
         }
         const token = jwt.sign(
           { id: user._id, username: user.username, role: user.role, email: user.email },
-          process.env.JWT_SECRET || "yoursecretkey",
+          getSecureJWTSecret(),
           { expiresIn: "1d" }
         );
         
@@ -106,7 +108,7 @@ exports.login = async (req, res) => {
     
     const token = jwt.sign(
       { id: user._id, username: user.username, role: user.role, email: user.email },
-      process.env.JWT_SECRET || "yoursecretkey",
+      getSecureJWTSecret(),
       { expiresIn: "1d" }
     );
     
@@ -133,6 +135,15 @@ exports.registerSuperAdmin = async (req, res) => {
     });
   }
 
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({ 
+      success: false, 
+      message: passwordValidation.message 
+    });
+  }
+
   // Validate email format
   const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
   if (!emailRegex.test(email)) {
@@ -155,9 +166,12 @@ exports.registerSuperAdmin = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
+    // Hash password before saving
+    const hashedPassword = await hashPassword(password);
+    
     const superAdmin = new Admin({ 
       username, 
-      password, 
+      password: hashedPassword, 
       name: name || username,
       email: email.toLowerCase(),
       phone,
@@ -189,6 +203,15 @@ exports.registerAdmin = async (req, res) => {
     });
   }
 
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({ 
+      success: false, 
+      message: passwordValidation.message 
+    });
+  }
+
   // Validate email format
   const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
   if (!emailRegex.test(email)) {
@@ -211,9 +234,12 @@ exports.registerAdmin = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
+    // Hash password before saving
+    const hashedPassword = await hashPassword(password);
+    
     const admin = new Admin({ 
       username, 
-      password, 
+      password: hashedPassword, 
       name: name || username,
       email: email.toLowerCase(),
       phone,
@@ -244,6 +270,15 @@ exports.registerManager = async (req, res) => {
     });
   }
 
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({ 
+      success: false, 
+      message: passwordValidation.message 
+    });
+  }
+
   // Validate email format
   const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
   if (!emailRegex.test(email)) {
@@ -266,9 +301,12 @@ exports.registerManager = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
+    // Hash password before saving
+    const hashedPassword = await hashPassword(password);
+    
     const manager = new Manager({ 
       username, 
-      password, 
+      password: hashedPassword, 
       name,
       department,
       phone,
@@ -303,6 +341,15 @@ exports.registerCitizen = async (req, res) => {
     });
   }
 
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({ 
+      success: false, 
+      message: passwordValidation.message 
+    });
+  }
+
   // Validate email format
   const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
   if (!emailRegex.test(email)) {
@@ -325,9 +372,12 @@ exports.registerCitizen = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
+    // Hash password before saving
+    const hashedPassword = await hashPassword(password);
+    
     const citizen = new Citizen({ 
       username, 
-      password, 
+      password: hashedPassword, 
       name, 
       address, 
       phone, 
@@ -354,6 +404,15 @@ exports.registerEmployee = async (req, res) => {
     return res.status(400).json({ 
       success: false, 
       message: "Username, password, name, employeeId, and email are required" 
+    });
+  }
+
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({ 
+      success: false, 
+      message: passwordValidation.message 
     });
   }
 
@@ -388,9 +447,12 @@ exports.registerEmployee = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
+    // Hash password before saving
+    const hashedPassword = await hashPassword(password);
+    
     const employee = new Employee({ 
       username, 
-      password, 
+      password: hashedPassword, 
       name, 
       employeeId, 
       department, 

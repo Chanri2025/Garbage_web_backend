@@ -2,24 +2,26 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const { auth, requireAdmin } = require("../middleware/auth");
+const { authLimiter, registrationLimiter, adminLimiter } = require("../middleware/security");
+const { authValidation } = require("../middleware/validation");
 
-// Login route (all user types)
-router.post("/login", authController.login);
+// Login route (all user types) - with rate limiting
+router.post("/login", authLimiter, authValidation.login, authController.login);
 
-// Registration routes
-router.post("/register/super-admin", authController.registerSuperAdmin);
-router.post("/register/admin", authController.registerAdmin);
-router.post("/register/manager", authController.registerManager);
-router.post("/register/citizen", authController.registerCitizen);
-router.post("/register/employee", authController.registerEmployee);
+// Registration routes - with rate limiting and validation
+router.post("/register/super-admin", registrationLimiter, authValidation.registerSuperAdmin, authController.registerSuperAdmin);
+router.post("/register/admin", registrationLimiter, authValidation.registerAdmin, authController.registerAdmin);
+router.post("/register/manager", registrationLimiter, authValidation.registerManager, authController.registerManager);
+router.post("/register/citizen", registrationLimiter, authValidation.registerCitizen, authController.registerCitizen);
+router.post("/register/employee", registrationLimiter, authValidation.registerEmployee, authController.registerEmployee);
 
 // Protected user profile route
 router.get("/me", auth, authController.getCurrentUser);
 
-// Admin routes for user management
-router.get("/pending-users", auth, requireAdmin, authController.getPendingUsers);
-router.post("/approve-user/:userId", auth, requireAdmin, authController.approveUser);
-router.post("/reject-user/:userId", auth, requireAdmin, authController.rejectUser);
+// Admin routes for user management - with admin rate limiting
+router.get("/pending-users", auth, requireAdmin, adminLimiter, authController.getPendingUsers);
+router.post("/approve-user/:userId", auth, requireAdmin, adminLimiter, authController.approveUser);
+router.post("/reject-user/:userId", auth, requireAdmin, adminLimiter, authController.rejectUser);
 
 // Role hierarchy info
 router.get("/roles", auth, (req, res) => {

@@ -3,6 +3,16 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const http = require("http");
 const { activityLogger } = require("./middleware/activityLogger");
+const { 
+  generalLimiter, 
+  authLimiter, 
+  registrationLimiter, 
+  uploadLimiter, 
+  adminLimiter,
+  securityHeaders, 
+  corsOptions, 
+  sanitizeInput 
+} = require("./middleware/security");
 dotenv.config();
 
 // Connect to SQL and MongoDB
@@ -12,9 +22,15 @@ require("./config/db.mongo");
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
-app.use(express.json());
+app.use(securityHeaders);
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(sanitizeInput);
 app.use("/uploads", express.static("uploads"));
+
+// Apply rate limiting
+app.use('/api', generalLimiter);
 
 // Activity logging middleware (MUST be before routes to capture all API calls)
 app.use('/api', activityLogger({
