@@ -13,6 +13,7 @@ const CitizenSchema = new mongoose.Schema({
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   role: { type: String, default: "citizen" },
+  house: { type: mongoose.Schema.Types.ObjectId, ref: "HouseDetails" }
 });
 
 module.exports = mongoose.model("Citizen", CitizenSchema);

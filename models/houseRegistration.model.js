@@ -10,6 +10,7 @@ const houseRegistrationSchema = new mongoose.Schema({
   Updated_Date: Date,
   Area_ID: Number,
   Emp_ID: Number,
+  Citizen_ID: { type: mongoose.Schema.Types.ObjectId, ref: 'Citizen' },
 });
 
 // Counter schema for auto-incrementing House_ID
