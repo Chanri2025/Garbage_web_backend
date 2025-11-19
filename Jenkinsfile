@@ -16,7 +16,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Chanri2025/Garbage_web_backend.git'
+                git branch: 'master', url: 'https://github.com/Chanri2025/Garbage_web_backend.git'
             }
         }
 
