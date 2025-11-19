@@ -1,0 +1,44 @@
+# Dependency directories
+node_modules
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs
+*.log
+debug.log
+package-lock.json
+
+# Env files (already provided through Jenkins)
+.env
+.env.local
+.env.*.local
+
+# Users upload directory (will be created in container)
+uploads
+
+# Docker files not needed inside image
+Dockerfile
+docker-compose.yml
+
+# Git & IDE
+.git
+.gitignore
+.gitattributes
+.vscode
+.idea
+*.swp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+__tests__
+*.spec.js
+*.test.js
+
+# OS cache & garbage
+*.cache
