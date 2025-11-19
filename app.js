@@ -3,15 +3,15 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const http = require("http");
 const { activityLogger } = require("./middleware/activityLogger");
-const { 
-  generalLimiter, 
-  authLimiter, 
-  registrationLimiter, 
-  uploadLimiter, 
+const {
+  generalLimiter,
+  authLimiter,
+  registrationLimiter,
+  uploadLimiter,
   adminLimiter,
-  securityHeaders, 
-  corsOptions, 
-  sanitizeInput 
+  securityHeaders,
+  corsOptions,
+  sanitizeInput,
 } = require("./middleware/security");
 dotenv.config();
 
@@ -24,19 +24,22 @@ const server = http.createServer(app);
 
 app.use(securityHeaders);
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(sanitizeInput);
 app.use("/uploads", express.static("uploads"));
 
 // Apply rate limiting
-app.use('/api', generalLimiter);
+app.use("/api", generalLimiter);
 
 // Activity logging middleware (MUST be before routes to capture all API calls)
-app.use('/api', activityLogger({
-  skipPaths: ['/uploads'], // Only skip uploads, log everything else including login/register
-  includeResponseData: true // Set to true if you want to log response data
-}));
+app.use(
+  "/api",
+  activityLogger({
+    skipPaths: ["/uploads"], // Only skip uploads, log everything else including login/register
+    includeResponseData: true, // Set to true if you want to log response data
+  })
+);
 
 // Import SQL routes
 const employeeRoutes = require("./routes/employeeRoutes");
@@ -57,7 +60,6 @@ const houseRoutes = require("./routes/houseRegistration.routes");
 const carbonFootprintDetailsRoutes = require("./routes/carbonFootprintDetails.routes");
 const areaWiseGarbageCollectionRoutes = require("./routes/areaWiseGarbageCollection.route");
 const authRoutes = require("./routes/authRoutes");
-
 
 // Import Query routes
 const queryRoutes = require("./routes/queryRoutes");
@@ -90,7 +92,6 @@ app.use("/api/attendanceLogs", dailyAttendanceLogRoutes);
 app.use("/api/houses", houseRoutes);
 app.use("/api/carbonFootprintDetails", carbonFootprintDetailsRoutes);
 
-
 // Query API Endpoints
 app.use("/api/queries", queryRoutes);
 
@@ -112,14 +113,14 @@ app.get("/", (req, res) => {
       roleHierarchy: ["super-admin", "admin", "manager", "employee", "citizen"],
       approvalWorkflow: true,
       userManagement: true,
-      activityLogging: true
+      activityLogging: true,
     },
     endpoints: {
       auth: "/api/auth",
       approvals: "/api/approvals",
       queries: "/api/queries",
-      activityLogs: "/api/activity-logs"
-    }
+      activityLogs: "/api/activity-logs",
+    },
   });
 });
 
@@ -128,12 +129,11 @@ app.get("/api/test", (req, res) => {
   res.json({
     message: "Test endpoint for activity logging",
     timestamp: new Date().toISOString(),
-    user: req.user || "Anonymous"
+    user: req.user || "Anonymous",
   });
 });
 
-
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
